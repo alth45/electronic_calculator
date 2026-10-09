@@ -1,5 +1,13 @@
 # Kalkulator Rangkaian Elektronika (Assembly + C)
 
+![Bahasa C](https://img.shields.io/badge/Bahasa-C-03599C?style=flat-square&logo=c&logoColor=white)
+![Bahasa Assembly](https://img.shields.io/badge/Bahasa-Assembly%20x86--64-555555?style=flat-square)
+![Assembler NASM](https://img.shields.io/badge/Assembler-NASM-2C3E50?style=flat-square)
+![GUI Win32 API](https://img.shields.io/badge/GUI-Win32%20API-0078D6?style=flat-square&logo=windows&logoColor=white)
+![Platform Windows](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
+![Uji unit 39 lulus](https://img.shields.io/badge/Uji-39%20lulus-brightgreen?style=flat-square)
+![Dokumentasi Bahasa Indonesia](https://img.shields.io/badge/Dokumentasi-Bahasa%20Indonesia-FF0000?style=flat-square)
+
 Aplikasi GUI Windows untuk menghitung besaran rangkaian elektronika —
 **tegangan, arus, hambatan, gabungan hambatan (seri/paralel), daya listrik, muatan listrik, dan kapasitansi kapasitor** —
 dengan pembagian tugas:
@@ -10,29 +18,55 @@ dengan pembagian tugas:
 ## Fitur
 
 1. **Hukum Ohm** — pilih magnitudo yang dicari (radio button):
-   - Cari Tegangan → `V = I × R`
-   - Cari Arus → `I = V / R`
-   - Cari Hambatan → `R = V / I`
+   - Cari Tegangan → $V = I \times R$
+   - Cari Arus → $I = \dfrac{V}{R}$
+   - Cari Hambatan → $R = \dfrac{V}{I}$
    - Field yang dicari otomatis dinonaktifkan, hasil tampil dengan satuan (V / A / Ω)
 2. **Gabungan Hambatan** — masukkan beberapa nilai dipisah koma (contoh: `100, 220, 330`):
-   - Seri → `Rs = R1 + R2 + ... + Rn` (loop penjumlahan di assembly)
-   - Paralel → `Rp = 1 / (1/R1 + 1/R2 + ... + 1/Rn)` (loop Σ(1/Ri) di assembly)
+   - Seri → $R_s = R_1 + R_2 + \cdots + R_n$ (loop penjumlahan di assembly)
+   - Paralel → $R_p = \left(\sum_{i=1}^{n} \frac{1}{R_i}\right)^{-1}$ (loop Σ(1/Rᵢ) di assembly)
 3. **Daya Listrik** — pilih rumus (radio button):
-   - `P = V × I`
-   - `P = I² × R`
-   - `P = V² / R` (R = 0 → error)
+   - $P = V \times I$
+   - $P = I^2 \times R$
+   - $P = \dfrac{V^2}{R}$ ($R = 0$ → error)
    - Field yang tidak dipakai rumus aktif otomatis dinonaktifkan
 4. **Muatan Listrik** — pilih magnitudo yang dicari (radio button):
-   - Cari Muatan → `Q = I × t` (satuan coulomb)
-   - Cari Arus → `I = Q / t`
-   - Cari Waktu → `t = Q / I` (waktu dalam sekon)
+   - Cari Muatan → $Q = I \times t$ (satuan coulomb)
+   - Cari Arus → $I = \dfrac{Q}{t}$
+   - Cari Waktu → $t = \dfrac{Q}{I}$ (waktu dalam sekon)
    - Field yang dicari otomatis dinonaktifkan
 5. **Kapasitansi Kapasitor** — pilih magnitudo yang dicari (radio button):
-   - Cari Kapasitansi → `C = Q / V` (satuan farad)
-   - Cari Muatan → `Q = C × V`
-   - Cari Tegangan → `V = Q / C`
+   - Cari Kapasitansi → $C = \dfrac{Q}{V}$ (satuan farad)
+   - Cari Muatan → $Q = C \times V$
+   - Cari Tegangan → $V = \dfrac{Q}{C}$
 
 Validasi input ketat (angka valid, hambatan > 0) dengan pesan error bahasa Indonesia.
+
+## Kumpulan Rumus
+
+**1. Hukum Ohm**
+
+$$V = I \times R \qquad I = \frac{V}{R} \qquad R = \frac{V}{I}$$
+
+**2. Gabungan hambatan**
+
+$$R_s = R_1 + R_2 + \cdots + R_n$$
+
+$$R_p = \left( \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n} \right)^{-1}$$
+
+**3. Daya listrik**
+
+$$P = V \times I = I^2 R = \frac{V^2}{R}$$
+
+**4. Muatan listrik**
+
+$$Q = I \times t \qquad I = \frac{Q}{t} \qquad t = \frac{Q}{I}$$
+
+**5. Kapasitansi kapasitor**
+
+$$C = \frac{Q}{V} \qquad Q = C \times V \qquad V = \frac{Q}{C}$$
+
+Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad).
 
 ## Persyaratan
 
