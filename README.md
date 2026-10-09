@@ -5,7 +5,7 @@
 ![Assembler NASM](https://img.shields.io/badge/Assembler-NASM-2C3E50?style=flat-square)
 ![GUI Win32 API](https://img.shields.io/badge/GUI-Win32%20API-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![Platform Windows](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
-![Uji unit 39 lulus](https://img.shields.io/badge/Uji-39%20lulus-brightgreen?style=flat-square)
+![Uji unit 45 lulus](https://img.shields.io/badge/Uji-45%20lulus-brightgreen?style=flat-square)
 ![Dokumentasi Bahasa Indonesia](https://img.shields.io/badge/Dokumentasi-Bahasa%20Indonesia-FF0000?style=flat-square)
 
 Aplikasi GUI Windows untuk menghitung besaran rangkaian elektronika —
@@ -39,6 +39,11 @@ dengan pembagian tugas:
    - Cari Kapasitansi → $C = \dfrac{Q}{V}$ (satuan farad)
    - Cari Muatan → $Q = C \times V$
    - Cari Tegangan → $V = \dfrac{Q}{C}$
+6. **Energi Kapasitor** — pilih rumus (radio button):
+   - $E_c = \dfrac{1}{2} C V^2$
+   - $E_c = \dfrac{1}{2} Q V$
+   - $E_c = \dfrac{Q^2}{2C}$ ($C = 0$ → error)
+   - Hasil dalam joule; field yang tidak dipakai rumus aktif otomatis dinonaktifkan
 
 Validasi input ketat (angka valid, hambatan > 0) dengan pesan error bahasa Indonesia.
 
@@ -66,7 +71,11 @@ $$Q = I \times t \qquad I = \frac{Q}{t} \qquad t = \frac{Q}{I}$$
 
 $$C = \frac{Q}{V} \qquad Q = C \times V \qquad V = \frac{Q}{C}$$
 
-Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad).
+**6. Energi dalam kapasitor**
+
+$$E_c = \frac{1}{2} C V^2 = \frac{1}{2} Q V = \frac{Q^2}{2C}$$
+
+Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad), $E_c$ = energi kapasitor (joule).
 
 ## Persyaratan
 
@@ -83,7 +92,7 @@ Keduanya harus ada di `PATH`. Windows 64-bit (target ABI: Windows x64).
 :: Build GUI saja
 build.bat
 
-:: Build + jalankan 39 uji unit logika assembly
+:: Build + jalankan 45 uji unit logika assembly
 build.bat test
 ```
 
@@ -97,6 +106,7 @@ Build manual (setara isi `build.bat`):
 nasm -f win64 core\ohm.asm -o ohm.obj
 gcc -O2 -Wall -municode -mwindows -Iinclude ^
     src\main.c src\gui.c src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
+    src\calc_energy.c ^
     ohm.obj -o kalkulator_rangkaian.exe -lgdi32
 
 :: Uji unit (opsional)
@@ -117,8 +127,9 @@ asm-c/
 │   ├── gui.c             # Window procedure, kontrol UI, utilitas GUI
 │   ├── calc_ohm.c        # Kalkulator hukum Ohm & gabungan hambatan
 │   ├── calc_power.c      # Kalkulator daya listrik
-│   └── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
-├── test_ohm.c            # 39 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor)
+│   ├── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
+│   └── calc_energy.c     # Kalkulator energi dalam kapasitor
+├── test_ohm.c            # 45 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
 └── README.md
@@ -148,6 +159,7 @@ asm-c/
 │  - calc_time_from_charge                             │
 │  - calc_capacitance / calc_charge_from_capacitance   │
 │  - calc_voltage_from_capacitance                     │
+│  - calc_cap_energy_cv / _qv / _qc                    │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -161,7 +173,7 @@ asm-c/
 
 ## Uji Program
 
-`test_ohm.c` berisi 39 pemeriksaan:
+`test_ohm.c` berisi 45 pemeriksaan:
 
 | Kelompok | Jumlah | Contoh kasus |
 |---|---|---|
@@ -171,11 +183,12 @@ asm-c/
 | Daya listrik | 9 | `P(12 V, 2 A) = 24 W`, `V²/R` dengan R = 0 → NaN |
 | Muatan listrik | 6 | `Q(2 A, 3 s) = 6 C`, `I(5 C, 0 s) → NaN` |
 | Kapasitansi kapasitor | 7 | `C(10 C, 2 V) = 5 F`, `V(7 C, 0 F) → NaN` |
+| Energi kapasitor | 6 | `Ec(2 F, 3 V) = 9 J`, `Ec(5 C, 0 F) → NaN` |
 
 Jalankan `build.bat test` — keluaran akhir `SEMUA UJI LULUS (0 kegagalan)`.
 
 ## Catatan
 
 - "Tegangan" dan "voltase" adalah besaran yang sama (V).
-- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s), farad (F).
+- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s), farad (F), joule (J).
 - Perhitungan memakai IEEE 754 double precision — hasil desimal diformat `%.6g`.

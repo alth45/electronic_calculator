@@ -18,6 +18,7 @@ default rel
 section .rodata
     dq_zero:    dq 0.0
     dq_one:     dq 1.0
+    dq_half:    dq 0.5                      ; konstanta 1/2 untuk energi
     dq_nan:     dq 0x7FF8000000000000      ; quiet NaN = kode error
 
 section .text
@@ -36,6 +37,9 @@ global calc_time_from_charge
 global calc_capacitance
 global calc_charge_from_capacitance
 global calc_voltage_from_capacitance
+global calc_cap_energy_cv
+global calc_cap_energy_qv
+global calc_cap_energy_qc
 
 
 ; -----------------------------------------------------------------------------
@@ -270,6 +274,46 @@ calc_voltage_from_capacitance:
     and     rax, rcx                       ; mask exponent+mantissa
     jz      .error                         ; |C| == 0 -> error
     divsd   xmm0, xmm1                     ; V = Q / C
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; =============================================================================
+; Energi dalam kapasitor (joule)
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; double calc_cap_energy_cv(double capacitance /*XMM0*/, double voltage /*XMM1*/)
+; Ec = 1/2 * C * V^2
+; -----------------------------------------------------------------------------
+calc_cap_energy_cv:
+    mulsd   xmm1, xmm1                     ; V * V
+    mulsd   xmm0, xmm1                     ; C * V^2
+    mulsd   xmm0, [dq_half]                ; * 1/2
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_cap_energy_qv(double charge /*XMM0*/, double voltage /*XMM1*/)
+; Ec = 1/2 * Q * V
+; -----------------------------------------------------------------------------
+calc_cap_energy_qv:
+    mulsd   xmm0, xmm1                     ; Q * V
+    mulsd   xmm0, [dq_half]                ; * 1/2
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_cap_energy_qc(double charge /*XMM0*/, double capacitance /*XMM1*/)
+; Ec = Q^2 / (2 * C),  error (NaN) jika C == 0
+; -----------------------------------------------------------------------------
+calc_cap_energy_qc:
+    movq    rax, xmm1                      ; ambil bit pattern C
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx                       ; mask exponent+mantissa
+    jz      .error                         ; |C| == 0 -> error
+    mulsd   xmm0, xmm0                     ; Q * Q
+    divsd   xmm0, xmm1                     ; Q^2 / C
+    mulsd   xmm0, [dq_half]                ; * 1/2  -> Q^2 / (2C)
     ret
 .error:
     movsd   xmm0, [dq_nan]

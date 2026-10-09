@@ -53,7 +53,15 @@ enum {
     ID_EDIT_CAP_Q,
     ID_EDIT_CAP_V,
     ID_BTN_CAP,
-    ID_LBL_CAP_RESULT
+    ID_LBL_CAP_RESULT,
+    ID_EC_CV,
+    ID_EC_QV,
+    ID_EC_QC,
+    ID_EDIT_EC_C,
+    ID_EDIT_EC_Q,
+    ID_EDIT_EC_V,
+    ID_BTN_EC,
+    ID_LBL_EC_RESULT
 };
 
 /* --------------------------------------------------------- mode/konstanta - */
@@ -78,6 +86,10 @@ enum {
 #define CAP_Q 1                  /* cari muatan:       Q = C × V */
 #define CAP_V 2                  /* cari tegangan:     V = Q / C */
 
+#define EC_CV 0                  /* energi kapasitor: Ec = ½ C V² */
+#define EC_QV 1                  /*                   Ec = ½ Q V  */
+#define EC_QC 2                  /*                   Ec = Q² / 2C */
+
 /* ------------------------------------------------ state global (main.c) --- */
 extern int   g_mode;
 extern HWND  g_editV, g_editI, g_editR, g_lblOhmResult;
@@ -88,6 +100,8 @@ extern int   g_chg_mode;
 extern HWND  g_editCHGQ, g_editCHGI, g_editCHGT, g_lblChgResult;
 extern int   g_cap_mode;
 extern HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
+extern int   g_e_mode;
+extern HWND  g_editECC, g_editECQ, g_editECV, g_lblEcResult;
 
 /* ------------------------------------------------------------- gui.c ----- */
 BOOL     read_double(HWND edit, double *out);
@@ -104,5 +118,8 @@ void do_power_calc(HWND hwnd);
 /* ------------------------------------------------------ calc_charge.c ---- */
 void do_charge_calc(HWND hwnd);
 void do_cap_calc(HWND hwnd);
+
+/* ---------------------------------------------------- calc_energy.c ---- */
+void do_energy_calc(HWND hwnd);
 
 #endif /* APP_H */

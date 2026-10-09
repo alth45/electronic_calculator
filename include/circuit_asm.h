@@ -58,4 +58,13 @@ double calc_charge_from_capacitance(double capacitance, double voltage);
 /* V = Q / C  (tegangan, volt),  C == 0 -> NaN */
 double calc_voltage_from_capacitance(double charge, double capacitance);
 
+/* Ec = 1/2 * C * V^2  (energi kapasitor, joule) */
+double calc_cap_energy_cv(double capacitance, double voltage);
+
+/* Ec = 1/2 * Q * V  (energi kapasitor, joule) */
+double calc_cap_energy_qv(double charge, double voltage);
+
+/* Ec = Q^2 / (2C)  (energi kapasitor, joule),  C == 0 -> NaN */
+double calc_cap_energy_qc(double charge, double capacitance);
+
 #endif /* CIRCUIT_ASM_H */

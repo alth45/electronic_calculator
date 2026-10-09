@@ -124,6 +124,14 @@ static void sync_cap_mode(void)
     EnableWindow(g_editCapV, g_cap_mode != CAP_V);
 }
 
+/* Sinkronkan edit energi kapasitor sesuai rumus aktif. */
+static void sync_energy_mode(void)
+{
+    EnableWindow(g_editECC, g_e_mode != EC_QV);
+    EnableWindow(g_editECQ, g_e_mode != EC_CV);
+    EnableWindow(g_editECV, g_e_mode != EC_QC);
+}
+
 /* --------------------------------------------------------- window proc --- */
 LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -309,14 +317,52 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                   SS_LEFT | SS_SUNKEN,
                   818, 276, 150, 60, ID_LBL_CAP_RESULT);
 
-        /* ---- Keterangan (kolom kanan) ---- */
+        /* ---- Bagian 6: Energi kapasitor (kolom kanan) ---- */
+        make_ctrl(hwnd, L"BUTTON",
+                  L"6. Energi Kapasitor  (Ec = \u00BD C\u00B7V\u00B2)",
+                  BS_GROUPBOX, 500, 346, 476, 160, 0);
+
+        make_ctrl(hwnd, L"BUTTON", L"Ec = \u00BD C\u00B7V\u00B2",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
+                  516, 372, 105, 18, ID_EC_CV);
+        make_ctrl(hwnd, L"BUTTON", L"Ec = \u00BD Q\u00B7V",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP,
+                  633, 372, 105, 18, ID_EC_QV);
+        make_ctrl(hwnd, L"BUTTON", L"Ec = Q\u00B2 / 2C",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP,
+                  750, 372, 105, 18, ID_EC_QC);
+
+        make_ctrl(hwnd, L"STATIC", L"Kapasitansi C (F) :",
+                  SS_LEFT, 516, 404, 110, 20, 0);
+        g_editECC = make_ctrl(hwnd, L"EDIT", L"",
+                              ES_AUTOHSCROLL,
+                              630, 401, 150, 23, ID_EDIT_EC_C);
+        make_ctrl(hwnd, L"STATIC", L"Muatan Q (C) :",
+                  SS_LEFT, 516, 434, 110, 20, 0);
+        g_editECQ = make_ctrl(hwnd, L"EDIT", L"",
+                              ES_AUTOHSCROLL,
+                              630, 431, 150, 23, ID_EDIT_EC_Q);
+        make_ctrl(hwnd, L"STATIC", L"Tegangan (V) :",
+                  SS_LEFT, 516, 464, 110, 20, 0);
+        g_editECV = make_ctrl(hwnd, L"EDIT", L"",
+                              ES_AUTOHSCROLL,
+                              630, 461, 150, 23, ID_EDIT_EC_V);
+
+        make_ctrl(hwnd, L"BUTTON", L"Hitung",
+                  0, 818, 406, 100, 30, ID_BTN_EC);
+        g_lblEcResult = make_ctrl(hwnd, L"STATIC",
+                  L"Hasil akan\nmuncul di sini",
+                  SS_LEFT | SS_SUNKEN,
+                  818, 444, 150, 60, ID_LBL_EC_RESULT);
+
+        /* ---- Keterangan (kolom kiri bawah) ---- */
         make_ctrl(hwnd, L"STATIC",
                   L"V = tegangan/voltase (volt)  \u2022  I = arus (ampere)  "
-                  L"\u2022  R = hambatan (ohm)  \u2022  P = daya (watt)  "
-                  L"\u2022  Q = muatan (coulomb)  \u2022  t = waktu (sekon)\n"
-                  L"C = kapasitansi (farad)  \u2022  Core: Assembly x86-64 "
-                  L"(NASM)  \u2022  GUI: C (Win32)",
-                  SS_LEFT, 500, 346, 476, 60, 0);
+                  L"\u2022  R = hambatan (ohm)  \u2022  P = daya (watt)\n"
+                  L"Q = muatan (coulomb)  \u2022  t = waktu (sekon)  "
+                  L"\u2022  C = kapasitansi (farad)  \u2022  Ec = energi (joule)\n"
+                  L"Core: Assembly x86-64 (NASM)  \u2022  GUI: C (Win32)",
+                  SS_LEFT, 12, 476, 476, 60, 0);
 
         /* Nilai awal contoh + mode default */
         SetWindowTextW(g_editI, L"0.5");
@@ -344,6 +390,12 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         CheckRadioButton(hwnd, ID_CAP_C, ID_CAP_V, ID_CAP_C);
         g_cap_mode = CAP_C;
         sync_cap_mode();
+
+        SetWindowTextW(g_editECC, L"2");
+        SetWindowTextW(g_editECV, L"3");
+        CheckRadioButton(hwnd, ID_EC_CV, ID_EC_QC, ID_EC_CV);
+        g_e_mode = EC_CV;
+        sync_energy_mode();
         return 0;
     }
 
@@ -388,6 +440,15 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         }
         if (id == ID_BTN_CAP) {
             do_cap_calc(hwnd);
+            return 0;
+        }
+        if (id == ID_EC_CV || id == ID_EC_QV || id == ID_EC_QC) {
+            g_e_mode = id - ID_EC_CV;
+            sync_energy_mode();
+            return 0;
+        }
+        if (id == ID_BTN_EC) {
+            do_energy_calc(hwnd);
             return 0;
         }
         break;

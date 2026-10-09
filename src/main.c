@@ -27,6 +27,8 @@ int   g_chg_mode = CHG_Q;
 HWND  g_editCHGQ, g_editCHGI, g_editCHGT, g_lblChgResult;
 int   g_cap_mode = CAP_C;
 HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
+int   g_e_mode = EC_CV;
+HWND  g_editECC, g_editECQ, g_editECV, g_lblEcResult;
 
 /* -------------------------------------------------------------- entry ---- */
 int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
@@ -34,7 +36,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 988, 480 };
+    RECT      rc = { 0, 0, 988, 548 };
     MSG       msg;
 
     (void)prev; (void)cmd;

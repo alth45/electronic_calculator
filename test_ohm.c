@@ -77,6 +77,14 @@ int main(void)
     check("V(12 C, 2 F) = 6 V",        calc_voltage_from_capacitance(12.0, 2.0), 6.0);
     check("V(7 C, 0 F) -> NaN",        calc_voltage_from_capacitance(7.0, 0.0), NAN);
 
+    puts("\n=== Uji Energi Kapasitor ===");
+    check("Ec(2 F, 3 V) = 9 J",        calc_cap_energy_cv(2.0, 3.0), 9.0);
+    check("Ec(0 F, 10 V) = 0 J",       calc_cap_energy_cv(0.0, 10.0), 0.0);
+    check("Ec(4 C, 5 V) = 10 J",       calc_cap_energy_qv(4.0, 5.0), 10.0);
+    check("Ec(0 C, 220 V) = 0 J",      calc_cap_energy_qv(0.0, 220.0), 0.0);
+    check("Ec(6 C, 2 F) = 9 J",        calc_cap_energy_qc(6.0, 2.0), 9.0);
+    check("Ec(5 C, 0 F) -> NaN",       calc_cap_energy_qc(5.0, 0.0), NAN);
+
     printf("\n%s (%d kegagalan)\n", g_fail ? "GAGAL" : "SEMUA UJI LULUS", g_fail);
     return g_fail ? 1 : 0;
 }
