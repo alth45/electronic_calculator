@@ -34,7 +34,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 500, 855 };
+    RECT      rc = { 0, 0, 988, 480 };
     MSG       msg;
 
     (void)prev; (void)cmd;

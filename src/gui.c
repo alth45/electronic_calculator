@@ -195,128 +195,128 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                   L"Hasil akan muncul di sini",
                   SS_LEFT, 28, 264, 440, 22, ID_LBL_NET_RESULT);
 
-        /* ---- Bagian 3: Daya listrik ---- */
+        /* ---- Bagian 3: Daya listrik (kolom kiri) ---- */
         make_ctrl(hwnd, L"BUTTON",
                   L"3. Daya Listrik  (P = V\u00D7I = I\u00B2\u00D7R = V\u00B2/R)",
-                  BS_GROUPBOX, 12, 306, 476, 160, 0);
+                  BS_GROUPBOX, 12, 308, 476, 160, 0);
 
         make_ctrl(hwnd, L"BUTTON", L"P = V \u00D7 I",
                   BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
-                  28, 332, 105, 18, ID_PWR_VI);
+                  28, 334, 105, 18, ID_PWR_VI);
         make_ctrl(hwnd, L"BUTTON", L"P = I\u00B2 \u00D7 R",
                   BS_AUTORADIOBUTTON | WS_TABSTOP,
-                  145, 332, 105, 18, ID_PWR_I2R);
+                  145, 334, 105, 18, ID_PWR_I2R);
         make_ctrl(hwnd, L"BUTTON", L"P = V\u00B2 / R",
                   BS_AUTORADIOBUTTON | WS_TABSTOP,
-                  262, 332, 105, 18, ID_PWR_V2R);
+                  262, 334, 105, 18, ID_PWR_V2R);
 
         make_ctrl(hwnd, L"STATIC", L"Tegangan (V) :",
-                  SS_LEFT, 28, 364, 110, 20, 0);
+                  SS_LEFT, 28, 366, 110, 20, 0);
         g_editPV = make_ctrl(hwnd, L"EDIT", L"",
                              ES_AUTOHSCROLL,
-                             142, 361, 150, 23, ID_EDIT_PV);
+                             142, 363, 150, 23, ID_EDIT_PV);
         make_ctrl(hwnd, L"STATIC", L"Arus (A) :",
-                  SS_LEFT, 28, 394, 110, 20, 0);
+                  SS_LEFT, 28, 396, 110, 20, 0);
         g_editPI = make_ctrl(hwnd, L"EDIT", L"",
                              ES_AUTOHSCROLL,
-                             142, 391, 150, 23, ID_EDIT_PI);
+                             142, 393, 150, 23, ID_EDIT_PI);
         make_ctrl(hwnd, L"STATIC", L"Hambatan (\u03A9) :",
-                  SS_LEFT, 28, 424, 110, 20, 0);
+                  SS_LEFT, 28, 426, 110, 20, 0);
         g_editPR = make_ctrl(hwnd, L"EDIT", L"",
                              ES_AUTOHSCROLL,
-                             142, 421, 150, 23, ID_EDIT_PR);
+                             142, 423, 150, 23, ID_EDIT_PR);
 
         make_ctrl(hwnd, L"BUTTON", L"Hitung",
-                  0, 330, 366, 100, 30, ID_BTN_POWER);
+                  0, 330, 368, 100, 30, ID_BTN_POWER);
         g_lblPwrResult = make_ctrl(hwnd, L"STATIC",
                   L"Hasil akan\nmuncul di sini",
                   SS_LEFT | SS_SUNKEN,
-                  330, 404, 150, 60, ID_LBL_PWR_RESULT);
+                  330, 406, 150, 60, ID_LBL_PWR_RESULT);
 
-        /* ---- Bagian 4: Muatan listrik ---- */
+        /* ---- Bagian 4: Muatan listrik (kolom kanan) ---- */
         make_ctrl(hwnd, L"BUTTON",
                   L"4. Muatan Listrik  (Q = I \u00D7 t)",
-                  BS_GROUPBOX, 12, 472, 476, 160, 0);
+                  BS_GROUPBOX, 500, 10, 476, 160, 0);
 
         make_ctrl(hwnd, L"BUTTON", L"Q = I \u00D7 t",
                   BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
-                  28, 498, 105, 18, ID_CHG_Q);
+                  516, 36, 105, 18, ID_CHG_Q);
         make_ctrl(hwnd, L"BUTTON", L"I = Q / t",
                   BS_AUTORADIOBUTTON | WS_TABSTOP,
-                  145, 498, 105, 18, ID_CHG_I);
+                  633, 36, 105, 18, ID_CHG_I);
         make_ctrl(hwnd, L"BUTTON", L"t = Q / I",
                   BS_AUTORADIOBUTTON | WS_TABSTOP,
-                  262, 498, 105, 18, ID_CHG_T);
+                  750, 36, 105, 18, ID_CHG_T);
 
         make_ctrl(hwnd, L"STATIC", L"Muatan Q (C) :",
-                  SS_LEFT, 28, 530, 110, 20, 0);
+                  SS_LEFT, 516, 68, 110, 20, 0);
         g_editCHGQ = make_ctrl(hwnd, L"EDIT", L"",
                                ES_AUTOHSCROLL,
-                               142, 527, 150, 23, ID_EDIT_CHG_Q);
+                               630, 65, 150, 23, ID_EDIT_CHG_Q);
         make_ctrl(hwnd, L"STATIC", L"Arus (A) :",
-                  SS_LEFT, 28, 560, 110, 20, 0);
+                  SS_LEFT, 516, 98, 110, 20, 0);
         g_editCHGI = make_ctrl(hwnd, L"EDIT", L"",
                                ES_AUTOHSCROLL,
-                               142, 557, 150, 23, ID_EDIT_CHG_I);
+                               630, 95, 150, 23, ID_EDIT_CHG_I);
         make_ctrl(hwnd, L"STATIC", L"Waktu t (s) :",
-                  SS_LEFT, 28, 590, 110, 20, 0);
+                  SS_LEFT, 516, 128, 110, 20, 0);
         g_editCHGT = make_ctrl(hwnd, L"EDIT", L"",
                                ES_AUTOHSCROLL,
-                               142, 587, 150, 23, ID_EDIT_CHG_T);
+                               630, 125, 150, 23, ID_EDIT_CHG_T);
 
         make_ctrl(hwnd, L"BUTTON", L"Hitung",
-                  0, 330, 532, 100, 30, ID_BTN_CHARGE);
+                  0, 818, 70, 100, 30, ID_BTN_CHARGE);
         g_lblChgResult = make_ctrl(hwnd, L"STATIC",
                   L"Hasil akan\nmuncul di sini",
                   SS_LEFT | SS_SUNKEN,
-                  330, 570, 150, 60, ID_LBL_CHG_RESULT);
+                  818, 108, 150, 60, ID_LBL_CHG_RESULT);
 
-        /* ---- Bagian 5: Kapasitansi kapasitor ---- */
+        /* ---- Bagian 5: Kapasitansi kapasitor (kolom kanan) ---- */
         make_ctrl(hwnd, L"BUTTON",
                   L"5. Kapasitansi Kapasitor  (C = Q / V)",
-                  BS_GROUPBOX, 12, 644, 476, 160, 0);
+                  BS_GROUPBOX, 500, 178, 476, 160, 0);
 
         make_ctrl(hwnd, L"BUTTON", L"C = Q / V",
                   BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
-                  28, 670, 105, 18, ID_CAP_C);
+                  516, 204, 105, 18, ID_CAP_C);
         make_ctrl(hwnd, L"BUTTON", L"Q = C \u00D7 V",
                   BS_AUTORADIOBUTTON | WS_TABSTOP,
-                  145, 670, 105, 18, ID_CAP_Q);
+                  633, 204, 105, 18, ID_CAP_Q);
         make_ctrl(hwnd, L"BUTTON", L"V = Q / C",
                   BS_AUTORADIOBUTTON | WS_TABSTOP,
-                  262, 670, 105, 18, ID_CAP_V);
+                  750, 204, 105, 18, ID_CAP_V);
 
         make_ctrl(hwnd, L"STATIC", L"Kapasitansi C (F) :",
-                  SS_LEFT, 28, 702, 110, 20, 0);
+                  SS_LEFT, 516, 236, 110, 20, 0);
         g_editCapC = make_ctrl(hwnd, L"EDIT", L"",
                                ES_AUTOHSCROLL,
-                               142, 699, 150, 23, ID_EDIT_CAP_C);
+                               630, 233, 150, 23, ID_EDIT_CAP_C);
         make_ctrl(hwnd, L"STATIC", L"Muatan Q (C) :",
-                  SS_LEFT, 28, 732, 110, 20, 0);
+                  SS_LEFT, 516, 266, 110, 20, 0);
         g_editCapQ = make_ctrl(hwnd, L"EDIT", L"",
                                ES_AUTOHSCROLL,
-                               142, 729, 150, 23, ID_EDIT_CAP_Q);
+                               630, 263, 150, 23, ID_EDIT_CAP_Q);
         make_ctrl(hwnd, L"STATIC", L"Tegangan (V) :",
-                  SS_LEFT, 28, 762, 110, 20, 0);
+                  SS_LEFT, 516, 296, 110, 20, 0);
         g_editCapV = make_ctrl(hwnd, L"EDIT", L"",
                                ES_AUTOHSCROLL,
-                               142, 759, 150, 23, ID_EDIT_CAP_V);
+                               630, 293, 150, 23, ID_EDIT_CAP_V);
 
         make_ctrl(hwnd, L"BUTTON", L"Hitung",
-                  0, 330, 704, 100, 30, ID_BTN_CAP);
+                  0, 818, 238, 100, 30, ID_BTN_CAP);
         g_lblCapResult = make_ctrl(hwnd, L"STATIC",
                   L"Hasil akan\nmuncul di sini",
                   SS_LEFT | SS_SUNKEN,
-                  330, 742, 150, 60, ID_LBL_CAP_RESULT);
+                  818, 276, 150, 60, ID_LBL_CAP_RESULT);
 
-        /* ---- Keterangan ---- */
+        /* ---- Keterangan (kolom kanan) ---- */
         make_ctrl(hwnd, L"STATIC",
                   L"V = tegangan/voltase (volt)  \u2022  I = arus (ampere)  "
                   L"\u2022  R = hambatan (ohm)  \u2022  P = daya (watt)  "
                   L"\u2022  Q = muatan (coulomb)  \u2022  t = waktu (sekon)\n"
                   L"C = kapasitansi (farad)  \u2022  Core: Assembly x86-64 "
                   L"(NASM)  \u2022  GUI: C (Win32)",
-                  SS_LEFT, 12, 810, 476, 40, 0);
+                  SS_LEFT, 500, 346, 476, 60, 0);
 
         /* Nilai awal contoh + mode default */
         SetWindowTextW(g_editI, L"0.5");
