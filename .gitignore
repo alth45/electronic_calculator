@@ -1,0 +1,37 @@
+# ===========================================================================
+# .gitignore - Kalkulator Rangkaian Elektronika (Assembly NASM + C Win32)
+# ===========================================================================
+
+# --- Hasil build (artefak assembly & kompilasi GCC) ---
+*.obj
+*.o
+*.exe
+*.dll
+*.a
+*.lib
+*.res
+
+# --- Info debug / peta simbol ---
+*.pdb
+*.ilk
+*.exp
+*.map
+*.lst
+
+# --- Log & file sementara ---
+*.log
+build_log.txt
+
+# --- Editor / IDE ---
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Sampah Windows / macOS ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
