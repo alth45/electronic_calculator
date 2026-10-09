@@ -49,4 +49,13 @@ double calc_current_from_charge(double charge, double time);
 /* t = Q / I  (waktu, sekon),  I == 0 -> NaN */
 double calc_time_from_charge(double charge, double current);
 
+/* C = Q / V  (kapasitansi, farad),  V == 0 -> NaN */
+double calc_capacitance(double charge, double voltage);
+
+/* Q = C * V  (muatan, coulomb) */
+double calc_charge_from_capacitance(double capacitance, double voltage);
+
+/* V = Q / C  (tegangan, volt),  C == 0 -> NaN */
+double calc_voltage_from_capacitance(double charge, double capacitance);
+
 #endif /* CIRCUIT_ASM_H */

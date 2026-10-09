@@ -68,6 +68,15 @@ int main(void)
     check("t(12 C, 2 A) = 6 s",        calc_time_from_charge(12.0, 2.0), 6.0);
     check("t(7 C, 0 A) -> NaN",        calc_time_from_charge(7.0, 0.0), NAN);
 
+    puts("\n=== Uji Kapasitansi Kapasitor ===");
+    check("C(10 C, 2 V) = 5 F",        calc_capacitance(10.0, 2.0), 5.0);
+    check("C(4 C, 0 V) -> NaN",        calc_capacitance(4.0, 0.0), NAN);
+    check("C(6 C, -3 V) = -2 F",       calc_capacitance(6.0, -3.0), -2.0);
+    check("Q(2 F, 3 V) = 6 C",         calc_charge_from_capacitance(2.0, 3.0), 6.0);
+    check("Q(0 F, 10 V) = 0 C",        calc_charge_from_capacitance(0.0, 10.0), 0.0);
+    check("V(12 C, 2 F) = 6 V",        calc_voltage_from_capacitance(12.0, 2.0), 6.0);
+    check("V(7 C, 0 F) -> NaN",        calc_voltage_from_capacitance(7.0, 0.0), NAN);
+
     printf("\n%s (%d kegagalan)\n", g_fail ? "GAGAL" : "SEMUA UJI LULUS", g_fail);
     return g_fail ? 1 : 0;
 }

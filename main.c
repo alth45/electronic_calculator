@@ -53,7 +53,15 @@ enum {
     ID_EDIT_CHG_I,
     ID_EDIT_CHG_T,
     ID_BTN_CHARGE,
-    ID_LBL_CHG_RESULT
+    ID_LBL_CHG_RESULT,
+    ID_CAP_C,
+    ID_CAP_Q,
+    ID_CAP_V,
+    ID_EDIT_CAP_C,
+    ID_EDIT_CAP_Q,
+    ID_EDIT_CAP_V,
+    ID_BTN_CAP,
+    ID_LBL_CAP_RESULT
 };
 
 #define MODE_V 0                 /* magnitudo yang dicari: tegangan */
@@ -73,6 +81,10 @@ enum {
 #define CHG_I 1                  /* cari arus:   I = Q / t  */
 #define CHG_T 2                  /* cari waktu:  t = Q / I  */
 
+#define CAP_C 0                  /* cari kapasitansi: C = Q / V */
+#define CAP_Q 1                  /* cari muatan:       Q = C × V */
+#define CAP_V 2                  /* cari tegangan:     V = Q / C */
+
 /* -------------------------------------------------------------- state ---- */
 static int   g_mode = MODE_V;
 static HWND  g_editV, g_editI, g_editR, g_lblOhmResult;
@@ -81,6 +93,8 @@ static int   g_pwr_mode = PWR_VI;
 static HWND  g_editPV, g_editPI, g_editPR, g_lblPwrResult;
 static int   g_chg_mode = CHG_Q;
 static HWND  g_editCHGQ, g_editCHGI, g_editCHGT, g_lblChgResult;
+static int   g_cap_mode = CAP_C;
+static HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
 
 /* ------------------------------------------------------------- helpers --- */
 
@@ -186,6 +200,14 @@ static void sync_charge_mode(void)
     EnableWindow(g_editCHGQ, g_chg_mode != CHG_Q);
     EnableWindow(g_editCHGI, g_chg_mode != CHG_I);
     EnableWindow(g_editCHGT, g_chg_mode != CHG_T);
+}
+
+/* Sinkronkan edit kapasitor sesuai magnitudo yang dicari. */
+static void sync_cap_mode(void)
+{
+    EnableWindow(g_editCapC, g_cap_mode != CAP_C);
+    EnableWindow(g_editCapQ, g_cap_mode != CAP_Q);
+    EnableWindow(g_editCapV, g_cap_mode != CAP_V);
 }
 
 /* ------------------------------------------------------ kalkulator Ohm --- */
@@ -352,6 +374,49 @@ static void do_charge_calc(HWND hwnd)
     }
 }
 
+/* ---------------------------------------------- kalkulator kapasitor ------ */
+static void do_cap_calc(HWND hwnd)
+{
+    double   c = 0.0, q = 0.0, v = 0.0, res;
+    wchar_t  msg[128];
+
+    if (g_cap_mode == CAP_C) {
+        if (!read_double(g_editCapQ, &q) || !read_double(g_editCapV, &v)) {
+            MessageBoxW(hwnd,
+                L"Masukkan muatan (C) dan tegangan (V) yang valid.",
+                L"Input kurang", MB_OK | MB_ICONWARNING);
+            return;
+        }
+        res = calc_capacitance(q, v);
+        swprintf(msg, 128, L"C = %.6g F", res);
+    } else if (g_cap_mode == CAP_Q) {
+        if (!read_double(g_editCapC, &c) || !read_double(g_editCapV, &v)) {
+            MessageBoxW(hwnd,
+                L"Masukkan kapasitansi (F) dan tegangan (V) yang valid.",
+                L"Input kurang", MB_OK | MB_ICONWARNING);
+            return;
+        }
+        res = calc_charge_from_capacitance(c, v);
+        swprintf(msg, 128, L"Q = %.6g C", res);
+    } else {
+        if (!read_double(g_editCapQ, &q) || !read_double(g_editCapC, &c)) {
+            MessageBoxW(hwnd,
+                L"Masukkan muatan (C) dan kapasitansi (F) yang valid.",
+                L"Input kurang", MB_OK | MB_ICONWARNING);
+            return;
+        }
+        res = calc_voltage_from_capacitance(q, c);
+        swprintf(msg, 128, L"V = %.6g V", res);
+    }
+
+    if (isnan(res)) {
+        SetWindowTextW(g_lblCapResult,
+            L"Error: pembagian nol\n(periksa nilai Anda)");
+    } else {
+        SetWindowTextW(g_lblCapResult, msg);
+    }
+}
+
 /* --------------------------------------------------------- window proc --- */
 static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -499,14 +564,52 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                   SS_LEFT | SS_SUNKEN,
                   330, 570, 150, 60, ID_LBL_CHG_RESULT);
 
+        /* ---- Bagian 5: Kapasitansi kapasitor ---- */
+        make_ctrl(hwnd, L"BUTTON",
+                  L"5. Kapasitansi Kapasitor  (C = Q / V)",
+                  BS_GROUPBOX, 12, 644, 476, 160, 0);
+
+        make_ctrl(hwnd, L"BUTTON", L"C = Q / V",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
+                  28, 670, 105, 18, ID_CAP_C);
+        make_ctrl(hwnd, L"BUTTON", L"Q = C \u00D7 V",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP,
+                  145, 670, 105, 18, ID_CAP_Q);
+        make_ctrl(hwnd, L"BUTTON", L"V = Q / C",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP,
+                  262, 670, 105, 18, ID_CAP_V);
+
+        make_ctrl(hwnd, L"STATIC", L"Kapasitansi C (F) :",
+                  SS_LEFT, 28, 702, 110, 20, 0);
+        g_editCapC = make_ctrl(hwnd, L"EDIT", L"",
+                               ES_AUTOHSCROLL,
+                               142, 699, 150, 23, ID_EDIT_CAP_C);
+        make_ctrl(hwnd, L"STATIC", L"Muatan Q (C) :",
+                  SS_LEFT, 28, 732, 110, 20, 0);
+        g_editCapQ = make_ctrl(hwnd, L"EDIT", L"",
+                               ES_AUTOHSCROLL,
+                               142, 729, 150, 23, ID_EDIT_CAP_Q);
+        make_ctrl(hwnd, L"STATIC", L"Tegangan (V) :",
+                  SS_LEFT, 28, 762, 110, 20, 0);
+        g_editCapV = make_ctrl(hwnd, L"EDIT", L"",
+                               ES_AUTOHSCROLL,
+                               142, 759, 150, 23, ID_EDIT_CAP_V);
+
+        make_ctrl(hwnd, L"BUTTON", L"Hitung",
+                  0, 330, 704, 100, 30, ID_BTN_CAP);
+        g_lblCapResult = make_ctrl(hwnd, L"STATIC",
+                  L"Hasil akan\nmuncul di sini",
+                  SS_LEFT | SS_SUNKEN,
+                  330, 742, 150, 60, ID_LBL_CAP_RESULT);
+
         /* ---- Keterangan ---- */
         make_ctrl(hwnd, L"STATIC",
                   L"V = tegangan/voltase (volt)  \u2022  I = arus (ampere)  "
                   L"\u2022  R = hambatan (ohm)  \u2022  P = daya (watt)  "
                   L"\u2022  Q = muatan (coulomb)  \u2022  t = waktu (sekon)\n"
-                  L"Core perhitungan: Assembly x86-64 (NASM)  \u2022  "
-                  L"GUI: C (Win32)",
-                  SS_LEFT, 12, 638, 476, 40, 0);
+                  L"C = kapasitansi (farad)  \u2022  Core: Assembly x86-64 "
+                  L"(NASM)  \u2022  GUI: C (Win32)",
+                  SS_LEFT, 12, 810, 476, 40, 0);
 
         /* Nilai awal contoh + mode default */
         SetWindowTextW(g_editI, L"0.5");
@@ -527,6 +630,13 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         CheckRadioButton(hwnd, ID_CHG_Q, ID_CHG_T, ID_CHG_Q);
         g_chg_mode = CHG_Q;
         sync_charge_mode();
+
+        SetWindowTextW(g_editCapC, L"2");
+        SetWindowTextW(g_editCapQ, L"6");
+        SetWindowTextW(g_editCapV, L"3");
+        CheckRadioButton(hwnd, ID_CAP_C, ID_CAP_V, ID_CAP_C);
+        g_cap_mode = CAP_C;
+        sync_cap_mode();
         return 0;
     }
 
@@ -564,6 +674,15 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             do_charge_calc(hwnd);
             return 0;
         }
+        if (id == ID_CAP_C || id == ID_CAP_Q || id == ID_CAP_V) {
+            g_cap_mode = id - ID_CAP_C;
+            sync_cap_mode();
+            return 0;
+        }
+        if (id == ID_BTN_CAP) {
+            do_cap_calc(hwnd);
+            return 0;
+        }
         break;
     }
 
@@ -580,7 +699,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 500, 690 };
+    RECT      rc = { 0, 0, 500, 855 };
     MSG       msg;
 
     (void)prev; (void)cmd;

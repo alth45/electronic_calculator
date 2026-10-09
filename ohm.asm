@@ -33,6 +33,9 @@ global calc_power_v2r
 global calc_charge
 global calc_current_from_charge
 global calc_time_from_charge
+global calc_capacitance
+global calc_charge_from_capacitance
+global calc_voltage_from_capacitance
 
 
 ; -----------------------------------------------------------------------------
@@ -223,6 +226,50 @@ calc_time_from_charge:
     and     rax, rcx                       ; mask exponent+mantissa
     jz      .error                         ; |I| == 0 -> error
     divsd   xmm0, xmm1                     ; t = Q / I
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; =============================================================================
+; Kapasitansi kapasitor (farad)
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; double calc_capacitance(double charge /*XMM0*/, double voltage /*XMM1*/)
+; C = Q / V,  error (NaN) jika V == 0
+; -----------------------------------------------------------------------------
+calc_capacitance:
+    movq    rax, xmm1                      ; ambil bit pattern V
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx                       ; mask exponent+mantissa
+    jz      .error                         ; |V| == 0 -> error
+    divsd   xmm0, xmm1                     ; C = Q / V
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_charge_from_capacitance(double capacitance /*XMM0*/,
+;                                     double voltage /*XMM1*/)
+; Q = C * V
+; -----------------------------------------------------------------------------
+calc_charge_from_capacitance:
+    mulsd   xmm0, xmm1                     ; Q = C * V
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_voltage_from_capacitance(double charge /*XMM0*/,
+;                                      double capacitance /*XMM1*/)
+; V = Q / C,  error (NaN) jika C == 0
+; -----------------------------------------------------------------------------
+calc_voltage_from_capacitance:
+    movq    rax, xmm1                      ; ambil bit pattern C
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx                       ; mask exponent+mantissa
+    jz      .error                         ; |C| == 0 -> error
+    divsd   xmm0, xmm1                     ; V = Q / C
     ret
 .error:
     movsd   xmm0, [dq_nan]
