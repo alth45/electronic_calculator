@@ -1,0 +1,108 @@
+/*
+ * app.h - Deklarasi bersama antarmodul GUI
+ * -----------------------------------------
+ * Berisi ID kontrol, konstanta mode, deklarasi state global,
+ * serta prototipe fungsi yang dipakai lintas file di src/.
+ */
+#ifndef APP_H
+#define APP_H
+
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
+
+#include <windows.h>
+
+/* ------------------------------------------------------------------ ID ---- */
+enum {
+    ID_MODE_V = 100,
+    ID_MODE_I,
+    ID_MODE_R,
+    ID_EDIT_V,
+    ID_EDIT_I,
+    ID_EDIT_R,
+    ID_BTN_OHM,
+    ID_LBL_OHM_RESULT,
+    ID_EDIT_RES_LIST,
+    ID_COMBO_TOPO,
+    ID_BTN_NETWORK,
+    ID_LBL_NET_RESULT,
+    ID_PWR_VI,
+    ID_PWR_I2R,
+    ID_PWR_V2R,
+    ID_EDIT_PV,
+    ID_EDIT_PI,
+    ID_EDIT_PR,
+    ID_BTN_POWER,
+    ID_LBL_PWR_RESULT,
+    ID_CHG_Q,
+    ID_CHG_I,
+    ID_CHG_T,
+    ID_EDIT_CHG_Q,
+    ID_EDIT_CHG_I,
+    ID_EDIT_CHG_T,
+    ID_BTN_CHARGE,
+    ID_LBL_CHG_RESULT,
+    ID_CAP_C,
+    ID_CAP_Q,
+    ID_CAP_V,
+    ID_EDIT_CAP_C,
+    ID_EDIT_CAP_Q,
+    ID_EDIT_CAP_V,
+    ID_BTN_CAP,
+    ID_LBL_CAP_RESULT
+};
+
+/* --------------------------------------------------------- mode/konstanta - */
+#define MODE_V 0                 /* magnitudo yang dicari: tegangan */
+#define MODE_I 1                 /* arus                             */
+#define MODE_R 2                 /* hambatan                         */
+
+#define TOPO_SERI 0
+#define TOPO_PARALEL 1
+
+#define MAX_RESISTORS 64         /* maksimum jumlah hambatan input */
+
+#define PWR_VI  0                /* rumus daya: P = V × I   */
+#define PWR_I2R 1                /* rumus daya: P = I² × R  */
+#define PWR_V2R 2                /* rumus daya: P = V² / R  */
+
+#define CHG_Q 0                  /* cari muatan: Q = I × t  */
+#define CHG_I 1                  /* cari arus:   I = Q / t  */
+#define CHG_T 2                  /* cari waktu:  t = Q / I  */
+
+#define CAP_C 0                  /* cari kapasitansi: C = Q / V */
+#define CAP_Q 1                  /* cari muatan:       Q = C × V */
+#define CAP_V 2                  /* cari tegangan:     V = Q / C */
+
+/* ------------------------------------------------ state global (main.c) --- */
+extern int   g_mode;
+extern HWND  g_editV, g_editI, g_editR, g_lblOhmResult;
+extern HWND  g_editList, g_comboTopo, g_lblNetResult;
+extern int   g_pwr_mode;
+extern HWND  g_editPV, g_editPI, g_editPR, g_lblPwrResult;
+extern int   g_chg_mode;
+extern HWND  g_editCHGQ, g_editCHGI, g_editCHGT, g_lblChgResult;
+extern int   g_cap_mode;
+extern HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
+
+/* ------------------------------------------------------------- gui.c ----- */
+BOOL     read_double(HWND edit, double *out);
+int      parse_resistor_list(const wchar_t *text, double *out, int max_count);
+LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
+
+/* --------------------------------------------------------- calc_ohm.c ---- */
+void do_ohm_calc(HWND hwnd);
+void do_network_calc(HWND hwnd);
+
+/* ------------------------------------------------------- calc_power.c ---- */
+void do_power_calc(HWND hwnd);
+
+/* ------------------------------------------------------ calc_charge.c ---- */
+void do_charge_calc(HWND hwnd);
+void do_cap_calc(HWND hwnd);
+
+#endif /* APP_H */

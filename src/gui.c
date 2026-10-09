@@ -1,100 +1,12 @@
 /*
- * main.c - GUI Kalkulator Rangkaian Elektronika
- * ------------------------------------------------
- * GUI ditulis dalam bahasa C memakai Win32 API (Unicode, tanpa framework
- * eksternal). Seluruh logika perhitungan inti dijalankan oleh fungsi
- * Assembly x86-64 dari ohm.asm (lihat circuit_asm.h).
- *
- * Fitur:
- *   1. Hukum Ohm  - cari tegangan (V), arus (I), atau hambatan (R).
- *   2. Gabungan hambatan - rangkaian seri (Rs) dan paralel (Rp).
- *
- * Build: jalankan build.bat (butuh NASM + GCC MinGW-w64).
+ * gui.c - Window procedure, kontrol UI, dan utilitas GUI
+ * ------------------------------------------------------
+ * Membangun seluruh kontrol jendela (WM_CREATE), menangani event
+ * (WM_COMMAND), serta menyediakan utilitas baca input & sinkronisasi
+ * enable/disable field sesuai mode kalkulator.
  */
-#ifndef UNICODE
-#define UNICODE
-#endif
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-#include <windows.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "app.h"
 #include <wchar.h>
-#include <math.h>
-#include "circuit_asm.h"
-
-/* ------------------------------------------------------------------ ID ---- */
-enum {
-    ID_MODE_V = 100,
-    ID_MODE_I,
-    ID_MODE_R,
-    ID_EDIT_V,
-    ID_EDIT_I,
-    ID_EDIT_R,
-    ID_BTN_OHM,
-    ID_LBL_OHM_RESULT,
-    ID_EDIT_RES_LIST,
-    ID_COMBO_TOPO,
-    ID_BTN_NETWORK,
-    ID_LBL_NET_RESULT,
-    ID_PWR_VI,
-    ID_PWR_I2R,
-    ID_PWR_V2R,
-    ID_EDIT_PV,
-    ID_EDIT_PI,
-    ID_EDIT_PR,
-    ID_BTN_POWER,
-    ID_LBL_PWR_RESULT,
-    ID_CHG_Q,
-    ID_CHG_I,
-    ID_CHG_T,
-    ID_EDIT_CHG_Q,
-    ID_EDIT_CHG_I,
-    ID_EDIT_CHG_T,
-    ID_BTN_CHARGE,
-    ID_LBL_CHG_RESULT,
-    ID_CAP_C,
-    ID_CAP_Q,
-    ID_CAP_V,
-    ID_EDIT_CAP_C,
-    ID_EDIT_CAP_Q,
-    ID_EDIT_CAP_V,
-    ID_BTN_CAP,
-    ID_LBL_CAP_RESULT
-};
-
-#define MODE_V 0                 /* magnitudo yang dicari: tegangan */
-#define MODE_I 1                 /* arus                             */
-#define MODE_R 2                 /* hambatan                         */
-
-#define TOPO_SERI 0
-#define TOPO_PARALEL 1
-
-#define MAX_RESISTORS 64         /* maksimum jumlah hambatan input */
-
-#define PWR_VI  0                /* rumus daya: P = V × I   */
-#define PWR_I2R 1                /* rumus daya: P = I² × R  */
-#define PWR_V2R 2                /* rumus daya: P = V² / R  */
-
-#define CHG_Q 0                  /* cari muatan: Q = I × t  */
-#define CHG_I 1                  /* cari arus:   I = Q / t  */
-#define CHG_T 2                  /* cari waktu:  t = Q / I  */
-
-#define CAP_C 0                  /* cari kapasitansi: C = Q / V */
-#define CAP_Q 1                  /* cari muatan:       Q = C × V */
-#define CAP_V 2                  /* cari tegangan:     V = Q / C */
-
-/* -------------------------------------------------------------- state ---- */
-static int   g_mode = MODE_V;
-static HWND  g_editV, g_editI, g_editR, g_lblOhmResult;
-static HWND  g_editList, g_comboTopo, g_lblNetResult;
-static int   g_pwr_mode = PWR_VI;
-static HWND  g_editPV, g_editPI, g_editPR, g_lblPwrResult;
-static int   g_chg_mode = CHG_Q;
-static HWND  g_editCHGQ, g_editCHGI, g_editCHGT, g_lblChgResult;
-static int   g_cap_mode = CAP_C;
-static HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
 
 /* ------------------------------------------------------------- helpers --- */
 
@@ -112,7 +24,7 @@ static HWND make_ctrl(HWND parent, const wchar_t *cls, const wchar_t *txt,
 }
 
 /* Baca satu nilai double dari edit box. FALSE jika kosong / bukan angka. */
-static BOOL read_double(HWND edit, double *out)
+BOOL read_double(HWND edit, double *out)
 {
     wchar_t  buf[128];
     wchar_t *end;
@@ -140,7 +52,7 @@ static BOOL read_double(HWND edit, double *out)
  * Mengembalikan jumlah nilai valid (harus > 0), atau -1 jika ada token
  * yang bukan angka positif atau jumlah token melebihi max_count.
  */
-static int parse_resistor_list(const wchar_t *text, double *out, int max_count)
+int parse_resistor_list(const wchar_t *text, double *out, int max_count)
 {
     wchar_t  buf[512];
     wchar_t *ctx = NULL;
@@ -178,6 +90,8 @@ static int parse_resistor_list(const wchar_t *text, double *out, int max_count)
     return count;
 }
 
+/* --------------------------------------------------------- sync mode ----- */
+
 /* Sinkronkan status enable/disable edit sesuai magnitudo yang dicari. */
 static void sync_mode(void)
 {
@@ -210,215 +124,8 @@ static void sync_cap_mode(void)
     EnableWindow(g_editCapV, g_cap_mode != CAP_V);
 }
 
-/* ------------------------------------------------------ kalkulator Ohm --- */
-static void do_ohm_calc(HWND hwnd)
-{
-    double   v = 0.0, i = 0.0, r = 0.0, res;
-    wchar_t  msg[128];
-
-    if (g_mode == MODE_V) {
-        if (!read_double(g_editI, &i) || !read_double(g_editR, &r)) {
-            MessageBoxW(hwnd,
-                L"Masukkan nilai arus (A) dan hambatan (Ω) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_voltage(i, r);
-        swprintf(msg, 128, L"V = %.6g V", res);
-    } else if (g_mode == MODE_I) {
-        if (!read_double(g_editV, &v) || !read_double(g_editR, &r)) {
-            MessageBoxW(hwnd,
-                L"Masukkan nilai tegangan (V) dan hambatan (Ω) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_current(v, r);
-        swprintf(msg, 128, L"I = %.6g A", res);
-    } else {
-        if (!read_double(g_editV, &v) || !read_double(g_editI, &i)) {
-            MessageBoxW(hwnd,
-                L"Masukkan nilai tegangan (V) dan arus (A) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_resistance(v, i);
-        swprintf(msg, 128, L"R = %.6g \u03A9", res);
-    }
-
-    if (isnan(res))
-        SetWindowTextW(g_lblOhmResult,
-            L"Error: pembagian nol\n(periksa nilai Anda)");
-    else
-        SetWindowTextW(g_lblOhmResult, msg);
-}
-
-/* --------------------------------------------- kalkulator rangkaian ------ */
-static void do_network_calc(HWND hwnd)
-{
-    double  vals[MAX_RESISTORS];
-    wchar_t text[512];
-    wchar_t msg[256];
-    int     n, topo;
-    double  res;
-
-    GetWindowTextW(g_editList, text, 512);
-    n = parse_resistor_list(text, vals, MAX_RESISTORS);
-    if (n < 1) {
-        MessageBoxW(hwnd,
-            L"Masukkan minimal satu nilai hambatan > 0,\npisahkan "
-            L"beberapa nilai dengan koma. Contoh: 100, 220, 330",
-            L"Input tidak valid", MB_OK | MB_ICONWARNING);
-        return;
-    }
-
-    topo = (int)SendMessageW(g_comboTopo, CB_GETCURSEL, 0, 0);
-    if (topo != TOPO_PARALEL)
-        topo = TOPO_SERI;
-
-    res = (topo == TOPO_SERI)
-        ? calc_series_resistance(vals, n)
-        : calc_parallel_resistance(vals, n);
-
-    if (isnan(res)) {
-        SetWindowTextW(g_lblNetResult,
-            L"Error: input tidak valid (nilai harus > 0)");
-        return;
-    }
-
-    swprintf(msg, 256, L"%s = %.6g \u03A9  (dari %d hambatan)",
-             (topo == TOPO_SERI) ? L"Rs (seri)" : L"Rp (paralel)", res, n);
-    SetWindowTextW(g_lblNetResult, msg);
-}
-
-/* ------------------------------------------------------ kalkulator daya --- */
-static void do_power_calc(HWND hwnd)
-{
-    double   v = 0.0, i = 0.0, r = 0.0, res;
-    wchar_t  msg[128];
-
-    if (g_pwr_mode == PWR_VI) {
-        if (!read_double(g_editPV, &v) || !read_double(g_editPI, &i)) {
-            MessageBoxW(hwnd,
-                L"Masukkan tegangan (V) dan arus (A) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_power(v, i);
-    } else if (g_pwr_mode == PWR_I2R) {
-        if (!read_double(g_editPI, &i) || !read_double(g_editPR, &r)) {
-            MessageBoxW(hwnd,
-                L"Masukkan arus (A) dan hambatan (\u03A9) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_power_i2r(i, r);
-    } else {
-        if (!read_double(g_editPV, &v) || !read_double(g_editPR, &r)) {
-            MessageBoxW(hwnd,
-                L"Masukkan tegangan (V) dan hambatan (\u03A9) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_power_v2r(v, r);
-    }
-
-    if (isnan(res)) {
-        SetWindowTextW(g_lblPwrResult,
-            L"Error: pembagian nol\n(R = 0 pada P = V\u00B2/R)");
-    } else {
-        swprintf(msg, 128, L"P = %.6g W", res);
-        SetWindowTextW(g_lblPwrResult, msg);
-    }
-}
-
-/* ----------------------------------------------------- kalkulator muatan --- */
-static void do_charge_calc(HWND hwnd)
-{
-    double   q = 0.0, i = 0.0, t = 0.0, res;
-    wchar_t  msg[128];
-
-    if (g_chg_mode == CHG_Q) {
-        if (!read_double(g_editCHGI, &i) || !read_double(g_editCHGT, &t)) {
-            MessageBoxW(hwnd,
-                L"Masukkan arus (A) dan waktu (s) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_charge(i, t);
-        swprintf(msg, 128, L"Q = %.6g C", res);
-    } else if (g_chg_mode == CHG_I) {
-        if (!read_double(g_editCHGQ, &q) || !read_double(g_editCHGT, &t)) {
-            MessageBoxW(hwnd,
-                L"Masukkan muatan (C) dan waktu (s) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_current_from_charge(q, t);
-        swprintf(msg, 128, L"I = %.6g A", res);
-    } else {
-        if (!read_double(g_editCHGQ, &q) || !read_double(g_editCHGI, &i)) {
-            MessageBoxW(hwnd,
-                L"Masukkan muatan (C) dan arus (A) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_time_from_charge(q, i);
-        swprintf(msg, 128, L"t = %.6g s", res);
-    }
-
-    if (isnan(res)) {
-        SetWindowTextW(g_lblChgResult,
-            L"Error: pembagian nol\n(periksa nilai Anda)");
-    } else {
-        SetWindowTextW(g_lblChgResult, msg);
-    }
-}
-
-/* ---------------------------------------------- kalkulator kapasitor ------ */
-static void do_cap_calc(HWND hwnd)
-{
-    double   c = 0.0, q = 0.0, v = 0.0, res;
-    wchar_t  msg[128];
-
-    if (g_cap_mode == CAP_C) {
-        if (!read_double(g_editCapQ, &q) || !read_double(g_editCapV, &v)) {
-            MessageBoxW(hwnd,
-                L"Masukkan muatan (C) dan tegangan (V) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_capacitance(q, v);
-        swprintf(msg, 128, L"C = %.6g F", res);
-    } else if (g_cap_mode == CAP_Q) {
-        if (!read_double(g_editCapC, &c) || !read_double(g_editCapV, &v)) {
-            MessageBoxW(hwnd,
-                L"Masukkan kapasitansi (F) dan tegangan (V) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_charge_from_capacitance(c, v);
-        swprintf(msg, 128, L"Q = %.6g C", res);
-    } else {
-        if (!read_double(g_editCapQ, &q) || !read_double(g_editCapC, &c)) {
-            MessageBoxW(hwnd,
-                L"Masukkan muatan (C) dan kapasitansi (F) yang valid.",
-                L"Input kurang", MB_OK | MB_ICONWARNING);
-            return;
-        }
-        res = calc_voltage_from_capacitance(q, c);
-        swprintf(msg, 128, L"V = %.6g V", res);
-    }
-
-    if (isnan(res)) {
-        SetWindowTextW(g_lblCapResult,
-            L"Error: pembagian nol\n(periksa nilai Anda)");
-    } else {
-        SetWindowTextW(g_lblCapResult, msg);
-    }
-}
-
 /* --------------------------------------------------------- window proc --- */
-static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     switch (msg) {
     case WM_CREATE: {
@@ -692,50 +399,3 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     }
     return DefWindowProcW(hwnd, msg, wp, lp);
 }
-
-/* -------------------------------------------------------------- entry ---- */
-int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
-{
-    const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
-    WNDCLASSW wc;
-    HWND      hwnd;
-    RECT      rc = { 0, 0, 500, 855 };
-    MSG       msg;
-
-    (void)prev; (void)cmd;
-
-    wc.style         = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc   = wnd_proc;
-    wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = 0;
-    wc.hInstance     = inst;
-    wc.hIcon         = LoadIconW(NULL, MAKEINTRESOURCEW(IDI_APPLICATION));
-    wc.hCursor       = LoadCursorW(NULL, MAKEINTRESOURCEW(IDC_ARROW));
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-    wc.lpszMenuName  = NULL;
-    wc.lpszClassName = CLASS_NAME;
-    RegisterClassW(&wc);
-
-    AdjustWindowRectEx(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
-                            WS_MINIMIZEBOX, FALSE, 0);
-
-    hwnd = CreateWindowExW(0, CLASS_NAME,
-                           L"Kalkulator Rangkaian Elektronika (ASM + C)",
-                           WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
-                           WS_MINIMIZEBOX,
-                           CW_USEDEFAULT, CW_USEDEFAULT,
-                           rc.right - rc.left, rc.bottom - rc.top,
-                           NULL, NULL, inst, NULL);
-    if (!hwnd)
-        return 1;
-
-    ShowWindow(hwnd, show);
-    UpdateWindow(hwnd);
-
-    while (GetMessageW(&msg, NULL, 0, 0) > 0) {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
-    }
-    return (int)msg.wParam;
-}
-

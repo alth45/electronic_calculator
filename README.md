@@ -49,7 +49,7 @@ Keduanya harus ada di `PATH`. Windows 64-bit (target ABI: Windows x64).
 :: Build GUI saja
 build.bat
 
-:: Build + jalankan 26 uji unit logika assembly
+:: Build + jalankan 39 uji unit logika assembly
 build.bat test
 ```
 
@@ -60,17 +60,30 @@ Hasil build:
 Build manual (setara isi `build.bat`):
 
 ```bat
-nasm -f win64 ohm.asm -o ohm.obj
-gcc -O2 -Wall -municode -mwindows main.c ohm.obj -o kalkulator_rangkaian.exe -lgdi32
+nasm -f win64 core\ohm.asm -o ohm.obj
+gcc -O2 -Wall -municode -mwindows -Iinclude ^
+    src\main.c src\gui.c src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
+    ohm.obj -o kalkulator_rangkaian.exe -lgdi32
+
+:: Uji unit (opsional)
+gcc -O2 -Wall -Iinclude test_ohm.c ohm.obj -o test_ohm.exe
 ```
 
 ## Struktur File
 
 ```
 asm-c/
-├── ohm.asm               # Core perhitungan Assembly (x86-64, SSE2)
-├── circuit_asm.h         # Deklarasi fungsi assembly untuk C
-├── main.c                # GUI Win32 (Unicode) — 3 bagian kalkulator
+├── include/
+│   ├── circuit_asm.h     # Deklarasi fungsi Assembly untuk C
+│   └── app.h             # ID kontrol, konstanta mode, state & prototipe
+├── core/
+│   └── ohm.asm           # Core perhitungan Assembly (x86-64, SSE2)
+├── src/
+│   ├── main.c            # Entry point: wWinMain + definisi state global
+│   ├── gui.c             # Window procedure, kontrol UI, utilitas GUI
+│   ├── calc_ohm.c        # Kalkulator hukum Ohm & gabungan hambatan
+│   ├── calc_power.c      # Kalkulator daya listrik
+│   └── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
 ├── test_ohm.c            # 39 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
@@ -81,7 +94,11 @@ asm-c/
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  main.c (GUI Win32 / bahasa C)                       │
+│  src/*.c (GUI Win32 / bahasa C)                      │
+│  src/main.c        - entry point + state global      │
+│  src/gui.c         - window procedure + kontrol UI   │
+│  src/calc_*.c      - logika kalkulator per fitur     │
+│  include/app.h     - deklarasi bersama antarmodul    │
 │  - Parse input pengguna (wcstod)                     │
 │  - Validasi & pesan error                            │
 │  - Format hasil + satuan                             │
@@ -89,7 +106,7 @@ asm-c/
                │ panggil fungsi (Windows x64 ABI:
                │ argumen double di XMM0/XMM1, hasil di XMM0)
 ┌──────────────▼───────────────────────────────────────┐
-│  ohm.asm (Assembly NASM x86-64)                      │
+│  core/ohm.asm (Assembly NASM x86-64)                 │
 │  - calc_voltage / calc_current / calc_resistance     │
 │  - calc_series_resistance / calc_parallel_resistance │
 │  - calc_power / calc_power_i2r / calc_power_v2r      │
