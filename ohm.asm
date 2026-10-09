@@ -30,6 +30,9 @@ global calc_parallel_resistance
 global calc_power
 global calc_power_i2r
 global calc_power_v2r
+global calc_charge
+global calc_current_from_charge
+global calc_time_from_charge
 
 
 ; -----------------------------------------------------------------------------
@@ -178,6 +181,48 @@ calc_power_v2r:
     jz      .error                         ; |R| == 0 -> error
     mulsd   xmm0, xmm0                     ; V * V
     divsd   xmm0, xmm1                     ; V^2 / R
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; =============================================================================
+; Muatan listrik (coulomb)
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; double calc_charge(double current /*XMM0*/, double time /*XMM1*/)
+; Q = I * t
+; -----------------------------------------------------------------------------
+calc_charge:
+    mulsd   xmm0, xmm1                     ; Q = I * t
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_current_from_charge(double charge /*XMM0*/, double time /*XMM1*/)
+; I = Q / t,  error (NaN) jika t == 0
+; -----------------------------------------------------------------------------
+calc_current_from_charge:
+    movq    rax, xmm1                      ; ambil bit pattern t
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx                       ; mask exponent+mantissa
+    jz      .error                         ; |t| == 0 -> error
+    divsd   xmm0, xmm1                     ; I = Q / t
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_time_from_charge(double charge /*XMM0*/, double current /*XMM1*/)
+; t = Q / I,  error (NaN) jika I == 0
+; -----------------------------------------------------------------------------
+calc_time_from_charge:
+    movq    rax, xmm1                      ; ambil bit pattern I
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx                       ; mask exponent+mantissa
+    jz      .error                         ; |I| == 0 -> error
+    divsd   xmm0, xmm1                     ; t = Q / I
     ret
 .error:
     movsd   xmm0, [dq_nan]

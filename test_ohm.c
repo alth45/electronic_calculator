@@ -60,6 +60,14 @@ int main(void)
     check("P = V^2/R R=0 -> NaN",      calc_power_v2r(10.0, 0.0), NAN);
     check("P = V^2/R R=-0 -> NaN",     calc_power_v2r(5.0, -0.0), NAN);
 
+    puts("\n=== Uji Muatan Listrik ===");
+    check("Q(2 A, 3 s) = 6 C",         calc_charge(2.0, 3.0), 6.0);
+    check("Q(0 A, 10 s) = 0 C",        calc_charge(0.0, 10.0), 0.0);
+    check("I(10 C, 4 s) = 2.5 A",      calc_current_from_charge(10.0, 4.0), 2.5);
+    check("I(5 C, 0 s) -> NaN",        calc_current_from_charge(5.0, 0.0), NAN);
+    check("t(12 C, 2 A) = 6 s",        calc_time_from_charge(12.0, 2.0), 6.0);
+    check("t(7 C, 0 A) -> NaN",        calc_time_from_charge(7.0, 0.0), NAN);
+
     printf("\n%s (%d kegagalan)\n", g_fail ? "GAGAL" : "SEMUA UJI LULUS", g_fail);
     return g_fail ? 1 : 0;
 }

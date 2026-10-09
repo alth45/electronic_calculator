@@ -40,4 +40,13 @@ double calc_power_i2r(double current, double resistance);
 /* P = V^2 / R  (daya, watt),  R == 0 -> NaN */
 double calc_power_v2r(double voltage, double resistance);
 
+/* Q = I * t  (muatan, coulomb) */
+double calc_charge(double current, double time);
+
+/* I = Q / t  (arus, ampere),  t == 0 -> NaN */
+double calc_current_from_charge(double charge, double time);
+
+/* t = Q / I  (waktu, sekon),  I == 0 -> NaN */
+double calc_time_from_charge(double charge, double current);
+
 #endif /* CIRCUIT_ASM_H */

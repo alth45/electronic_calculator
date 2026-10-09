@@ -1,7 +1,7 @@
 # Kalkulator Rangkaian Elektronika (Assembly + C)
 
 Aplikasi GUI Windows untuk menghitung besaran rangkaian elektronika —
-**tegangan, arus, hambatan, gabungan hambatan (seri/paralel), dan daya listrik** —
+**tegangan, arus, hambatan, gabungan hambatan (seri/paralel), daya listrik, dan muatan listrik** —
 dengan pembagian tugas:
 
 - **GUI**: bahasa **C** memakai Win32 API murni (tanpa framework eksternal)
@@ -22,6 +22,11 @@ dengan pembagian tugas:
    - `P = I² × R`
    - `P = V² / R` (R = 0 → error)
    - Field yang tidak dipakai rumus aktif otomatis dinonaktifkan
+4. **Muatan Listrik** — pilih magnitudo yang dicari (radio button):
+   - Cari Muatan → `Q = I × t` (satuan coulomb)
+   - Cari Arus → `I = Q / t`
+   - Cari Waktu → `t = Q / I` (waktu dalam sekon)
+   - Field yang dicari otomatis dinonaktifkan
 
 Validasi input ketat (angka valid, hambatan > 0) dengan pesan error bahasa Indonesia.
 
@@ -62,7 +67,7 @@ asm-c/
 ├── ohm.asm               # Core perhitungan Assembly (x86-64, SSE2)
 ├── circuit_asm.h         # Deklarasi fungsi assembly untuk C
 ├── main.c                # GUI Win32 (Unicode) — 3 bagian kalkulator
-├── test_ohm.c            # 26 uji unit (Ohm, seri/paralel, daya)
+├── test_ohm.c            # 32 uji unit (Ohm, seri/paralel, daya, muatan)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
 └── README.md
@@ -84,6 +89,8 @@ asm-c/
 │  - calc_voltage / calc_current / calc_resistance     │
 │  - calc_series_resistance / calc_parallel_resistance │
 │  - calc_power / calc_power_i2r / calc_power_v2r      │
+│  - calc_charge / calc_current_from_charge            │
+│  - calc_time_from_charge                             │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -97,7 +104,7 @@ asm-c/
 
 ## Uji Program
 
-`test_ohm.c` berisi 26 pemeriksaan:
+`test_ohm.c` berisi 32 pemeriksaan:
 
 | Kelompok | Jumlah | Contoh kasus |
 |---|---|---|
@@ -105,11 +112,12 @@ asm-c/
 | Rangkaian seri | 5 | `100+220+330 = 650 Ω`, nilai ≤ 0 → NaN |
 | Rangkaian paralel | 5 | `100\|100 = 50 Ω`, `100\|220\|330 ≈ 56.8966 Ω` |
 | Daya listrik | 9 | `P(12 V, 2 A) = 24 W`, `V²/R` dengan R = 0 → NaN |
+| Muatan listrik | 6 | `Q(2 A, 3 s) = 6 C`, `I(5 C, 0 s) → NaN` |
 
 Jalankan `build.bat test` — keluaran akhir `SEMUA UJI LULUS (0 kegagalan)`.
 
 ## Catatan
 
 - "Tegangan" dan "voltase" adalah besaran yang sama (V).
-- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W).
+- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s).
 - Perhitungan memakai IEEE 754 double precision — hasil desimal diformat `%.6g`.

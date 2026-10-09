@@ -45,7 +45,15 @@ enum {
     ID_EDIT_PI,
     ID_EDIT_PR,
     ID_BTN_POWER,
-    ID_LBL_PWR_RESULT
+    ID_LBL_PWR_RESULT,
+    ID_CHG_Q,
+    ID_CHG_I,
+    ID_CHG_T,
+    ID_EDIT_CHG_Q,
+    ID_EDIT_CHG_I,
+    ID_EDIT_CHG_T,
+    ID_BTN_CHARGE,
+    ID_LBL_CHG_RESULT
 };
 
 #define MODE_V 0                 /* magnitudo yang dicari: tegangan */
@@ -61,12 +69,18 @@ enum {
 #define PWR_I2R 1                /* rumus daya: P = I² × R  */
 #define PWR_V2R 2                /* rumus daya: P = V² / R  */
 
+#define CHG_Q 0                  /* cari muatan: Q = I × t  */
+#define CHG_I 1                  /* cari arus:   I = Q / t  */
+#define CHG_T 2                  /* cari waktu:  t = Q / I  */
+
 /* -------------------------------------------------------------- state ---- */
 static int   g_mode = MODE_V;
 static HWND  g_editV, g_editI, g_editR, g_lblOhmResult;
 static HWND  g_editList, g_comboTopo, g_lblNetResult;
 static int   g_pwr_mode = PWR_VI;
 static HWND  g_editPV, g_editPI, g_editPR, g_lblPwrResult;
+static int   g_chg_mode = CHG_Q;
+static HWND  g_editCHGQ, g_editCHGI, g_editCHGT, g_lblChgResult;
 
 /* ------------------------------------------------------------- helpers --- */
 
@@ -164,6 +178,14 @@ static void sync_power_mode(void)
     EnableWindow(g_editPV, g_pwr_mode != PWR_I2R);
     EnableWindow(g_editPI, g_pwr_mode != PWR_V2R);
     EnableWindow(g_editPR, g_pwr_mode != PWR_VI);
+}
+
+/* Sinkronkan edit muatan sesuai magnitudo yang dicari. */
+static void sync_charge_mode(void)
+{
+    EnableWindow(g_editCHGQ, g_chg_mode != CHG_Q);
+    EnableWindow(g_editCHGI, g_chg_mode != CHG_I);
+    EnableWindow(g_editCHGT, g_chg_mode != CHG_T);
 }
 
 /* ------------------------------------------------------ kalkulator Ohm --- */
@@ -287,6 +309,49 @@ static void do_power_calc(HWND hwnd)
     }
 }
 
+/* ----------------------------------------------------- kalkulator muatan --- */
+static void do_charge_calc(HWND hwnd)
+{
+    double   q = 0.0, i = 0.0, t = 0.0, res;
+    wchar_t  msg[128];
+
+    if (g_chg_mode == CHG_Q) {
+        if (!read_double(g_editCHGI, &i) || !read_double(g_editCHGT, &t)) {
+            MessageBoxW(hwnd,
+                L"Masukkan arus (A) dan waktu (s) yang valid.",
+                L"Input kurang", MB_OK | MB_ICONWARNING);
+            return;
+        }
+        res = calc_charge(i, t);
+        swprintf(msg, 128, L"Q = %.6g C", res);
+    } else if (g_chg_mode == CHG_I) {
+        if (!read_double(g_editCHGQ, &q) || !read_double(g_editCHGT, &t)) {
+            MessageBoxW(hwnd,
+                L"Masukkan muatan (C) dan waktu (s) yang valid.",
+                L"Input kurang", MB_OK | MB_ICONWARNING);
+            return;
+        }
+        res = calc_current_from_charge(q, t);
+        swprintf(msg, 128, L"I = %.6g A", res);
+    } else {
+        if (!read_double(g_editCHGQ, &q) || !read_double(g_editCHGI, &i)) {
+            MessageBoxW(hwnd,
+                L"Masukkan muatan (C) dan arus (A) yang valid.",
+                L"Input kurang", MB_OK | MB_ICONWARNING);
+            return;
+        }
+        res = calc_time_from_charge(q, i);
+        swprintf(msg, 128, L"t = %.6g s", res);
+    }
+
+    if (isnan(res)) {
+        SetWindowTextW(g_lblChgResult,
+            L"Error: pembagian nol\n(periksa nilai Anda)");
+    } else {
+        SetWindowTextW(g_lblChgResult, msg);
+    }
+}
+
 /* --------------------------------------------------------- window proc --- */
 static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -396,13 +461,52 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                   SS_LEFT | SS_SUNKEN,
                   330, 404, 150, 60, ID_LBL_PWR_RESULT);
 
+        /* ---- Bagian 4: Muatan listrik ---- */
+        make_ctrl(hwnd, L"BUTTON",
+                  L"4. Muatan Listrik  (Q = I \u00D7 t)",
+                  BS_GROUPBOX, 12, 472, 476, 160, 0);
+
+        make_ctrl(hwnd, L"BUTTON", L"Q = I \u00D7 t",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
+                  28, 498, 105, 18, ID_CHG_Q);
+        make_ctrl(hwnd, L"BUTTON", L"I = Q / t",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP,
+                  145, 498, 105, 18, ID_CHG_I);
+        make_ctrl(hwnd, L"BUTTON", L"t = Q / I",
+                  BS_AUTORADIOBUTTON | WS_TABSTOP,
+                  262, 498, 105, 18, ID_CHG_T);
+
+        make_ctrl(hwnd, L"STATIC", L"Muatan Q (C) :",
+                  SS_LEFT, 28, 530, 110, 20, 0);
+        g_editCHGQ = make_ctrl(hwnd, L"EDIT", L"",
+                               ES_AUTOHSCROLL,
+                               142, 527, 150, 23, ID_EDIT_CHG_Q);
+        make_ctrl(hwnd, L"STATIC", L"Arus (A) :",
+                  SS_LEFT, 28, 560, 110, 20, 0);
+        g_editCHGI = make_ctrl(hwnd, L"EDIT", L"",
+                               ES_AUTOHSCROLL,
+                               142, 557, 150, 23, ID_EDIT_CHG_I);
+        make_ctrl(hwnd, L"STATIC", L"Waktu t (s) :",
+                  SS_LEFT, 28, 590, 110, 20, 0);
+        g_editCHGT = make_ctrl(hwnd, L"EDIT", L"",
+                               ES_AUTOHSCROLL,
+                               142, 587, 150, 23, ID_EDIT_CHG_T);
+
+        make_ctrl(hwnd, L"BUTTON", L"Hitung",
+                  0, 330, 532, 100, 30, ID_BTN_CHARGE);
+        g_lblChgResult = make_ctrl(hwnd, L"STATIC",
+                  L"Hasil akan\nmuncul di sini",
+                  SS_LEFT | SS_SUNKEN,
+                  330, 570, 150, 60, ID_LBL_CHG_RESULT);
+
         /* ---- Keterangan ---- */
         make_ctrl(hwnd, L"STATIC",
                   L"V = tegangan/voltase (volt)  \u2022  I = arus (ampere)  "
-                  L"\u2022  R = hambatan (ohm)  \u2022  P = daya (watt)\n"
+                  L"\u2022  R = hambatan (ohm)  \u2022  P = daya (watt)  "
+                  L"\u2022  Q = muatan (coulomb)  \u2022  t = waktu (sekon)\n"
                   L"Core perhitungan: Assembly x86-64 (NASM)  \u2022  "
                   L"GUI: C (Win32)",
-                  SS_LEFT, 12, 472, 476, 40, 0);
+                  SS_LEFT, 12, 638, 476, 40, 0);
 
         /* Nilai awal contoh + mode default */
         SetWindowTextW(g_editI, L"0.5");
@@ -416,6 +520,13 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         CheckRadioButton(hwnd, ID_PWR_VI, ID_PWR_V2R, ID_PWR_VI);
         g_pwr_mode = PWR_VI;
         sync_power_mode();
+
+        SetWindowTextW(g_editCHGQ, L"6");
+        SetWindowTextW(g_editCHGI, L"2");
+        SetWindowTextW(g_editCHGT, L"3");
+        CheckRadioButton(hwnd, ID_CHG_Q, ID_CHG_T, ID_CHG_Q);
+        g_chg_mode = CHG_Q;
+        sync_charge_mode();
         return 0;
     }
 
@@ -444,6 +555,15 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             do_power_calc(hwnd);
             return 0;
         }
+        if (id == ID_CHG_Q || id == ID_CHG_I || id == ID_CHG_T) {
+            g_chg_mode = id - ID_CHG_Q;
+            sync_charge_mode();
+            return 0;
+        }
+        if (id == ID_BTN_CHARGE) {
+            do_charge_calc(hwnd);
+            return 0;
+        }
         break;
     }
 
@@ -460,7 +580,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 500, 520 };
+    RECT      rc = { 0, 0, 500, 690 };
     MSG       msg;
 
     (void)prev; (void)cmd;
