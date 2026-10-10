@@ -7,10 +7,14 @@
  * Pembagian modul:
  *   include/app.h        - deklarasi bersama (ID, mode, state, prototipe)
  *   include/circuit_asm.h- deklarasi fungsi Assembly core
- *   src/gui.c            - window procedure + kontrol UI + utilitas
+ *   include/gui.h        - deklarasi bersama modul GUI
+ *   src/gui.c            - window procedure + event + manajemen tab
+ *   src/gui_widgets.c    - utilitas kontrol & parsing input
+ *   src/gui_pages.c      - pembuatan halaman (tab) tiap kalkulator
  *   src/calc_ohm.c       - kalkulator hukum Ohm & gabungan hambatan
  *   src/calc_power.c     - kalkulator daya listrik
  *   src/calc_charge.c    - kalkulator muatan & kapasitansi kapasitor
+ *   src/calc_energy.c    - kalkulator energi kapasitor & induktor
  *   core/ohm.asm         - logika perhitungan Assembly x86-64
  *
  * Build: jalankan build.bat (butuh NASM + GCC MinGW-w64).
@@ -39,7 +43,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 560, 272 };
+    RECT      rc = { 0, 0, 720, 310 };
     MSG       msg;
 
     INITCOMMONCONTROLSEX icc = { sizeof icc, ICC_TAB_CLASSES };

@@ -101,7 +101,7 @@ Keduanya harus ada di `PATH`. Windows 64-bit (target ABI: Windows x64).
 :: Build GUI saja
 build.bat
 
-:: Build + jalankan 45 uji unit logika assembly
+:: Build + jalankan 51 uji unit logika assembly
 build.bat test
 ```
 
@@ -114,9 +114,10 @@ Build manual (setara isi `build.bat`):
 ```bat
 nasm -f win64 core\ohm.asm -o ohm.obj
 gcc -O2 -Wall -municode -mwindows -Iinclude ^
-    src\main.c src\gui.c src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
+    src\main.c src\gui.c src\gui_widgets.c src\gui_pages.c ^
+    src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
     src\calc_energy.c ^
-    ohm.obj -o kalkulator_rangkaian.exe -lgdi32
+    ohm.obj -o kalkulator_rangkaian.exe -lgdi32 -lcomctl32
 
 :: Uji unit (opsional)
 gcc -O2 -Wall -Iinclude test_ohm.c ohm.obj -o test_ohm.exe
@@ -128,16 +129,19 @@ gcc -O2 -Wall -Iinclude test_ohm.c ohm.obj -o test_ohm.exe
 asm-c/
 ├── include/
 │   ├── circuit_asm.h     # Deklarasi fungsi Assembly untuk C
-│   └── app.h             # ID kontrol, konstanta mode, state & prototipe
+│   ├── app.h             # ID kontrol, konstanta mode, state & prototipe
+│   └── gui.h             # Deklarasi bersama modul GUI (grid PG_*)
 ├── core/
 │   └── ohm.asm           # Core perhitungan Assembly (x86-64, SSE2)
 ├── src/
 │   ├── main.c            # Entry point: wWinMain + definisi state global
-│   ├── gui.c             # Window procedure, kontrol UI, utilitas GUI
+│   ├── gui.c             # Window procedure, event, manajemen tab
+│   ├── gui_widgets.c     # Utilitas kontrol & parsing input
+│   ├── gui_pages.c       # Pembuatan halaman (tab) tiap kalkulator
 │   ├── calc_ohm.c        # Kalkulator hukum Ohm & gabungan hambatan
 │   ├── calc_power.c      # Kalkulator daya listrik
 │   ├── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
-│   ├── calc_energy.c     # Kalkulator energi kapasitor & induktor
+│   └── calc_energy.c     # Kalkulator energi kapasitor & induktor
 ├── test_ohm.c            # 51 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi C & L)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
@@ -149,10 +153,13 @@ asm-c/
 ```
 ┌──────────────────────────────────────────────────────┐
 │  src/*.c (GUI Win32 / bahasa C)                      │
-│  src/main.c        - entry point + state global      │
-│  src/gui.c         - window procedure + kontrol UI   │
-│  src/calc_*.c      - logika kalkulator per fitur     │
-│  include/app.h     - deklarasi bersama antarmodul    │
+│  src/main.c         - entry point + state global     │
+│  src/gui.c          - window procedure + tab + event │
+│  src/gui_widgets.c  - utilitas kontrol & parsing     │
+│  src/gui_pages.c    - halaman (tab) tiap kalkulator  │
+│  src/calc_*.c       - logika kalkulator per fitur    │
+│  include/app.h      - deklarasi bersama antarmodul   │
+│  include/gui.h      - deklarasi bersama modul GUI    │
 │  - Parse input pengguna (wcstod)                     │
 │  - Validasi & pesan error                            │
 │  - Format hasil + satuan                             │
