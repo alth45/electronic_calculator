@@ -31,7 +31,7 @@ echo [2/2] Compiling + linking src\*.c ...
 gcc -O2 -Wall -municode -mwindows -Iinclude ^
     src\main.c src\gui.c src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
     src\calc_energy.c ^
-    ohm.obj -o kalkulator_rangkaian.exe -lgdi32
+    ohm.obj -o kalkulator_rangkaian.exe -lgdi32 -lcomctl32
 if errorlevel 1 (
     echo [ERROR] Build GUI gagal.
     exit /b 1

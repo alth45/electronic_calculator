@@ -40,6 +40,9 @@ global calc_voltage_from_capacitance
 global calc_cap_energy_cv
 global calc_cap_energy_qv
 global calc_cap_energy_qc
+global calc_ind_energy_li
+global calc_ind_energy_fi
+global calc_ind_energy_fl
 
 
 ; -----------------------------------------------------------------------------
@@ -314,6 +317,46 @@ calc_cap_energy_qc:
     mulsd   xmm0, xmm0                     ; Q * Q
     divsd   xmm0, xmm1                     ; Q^2 / C
     mulsd   xmm0, [dq_half]                ; * 1/2  -> Q^2 / (2C)
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; =============================================================================
+; Energi dalam induktor (joule)
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; double calc_ind_energy_li(double inductance /*XMM0*/, double current /*XMM1*/)
+; El = 1/2 * L * I^2
+; -----------------------------------------------------------------------------
+calc_ind_energy_li:
+    mulsd   xmm1, xmm1                     ; I * I
+    mulsd   xmm0, xmm1                     ; L * I^2
+    mulsd   xmm0, [dq_half]                ; * 1/2
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_ind_energy_fi(double flux /*XMM0*/, double current /*XMM1*/)
+; El = 1/2 * Psi * I   (Psi = fluks magnet / tautan fluks)
+; -----------------------------------------------------------------------------
+calc_ind_energy_fi:
+    mulsd   xmm0, xmm1                     ; Psi * I
+    mulsd   xmm0, [dq_half]                ; * 1/2
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_ind_energy_fl(double flux /*XMM0*/, double inductance /*XMM1*/)
+; El = Psi^2 / (2 * L),  error (NaN) jika L == 0
+; -----------------------------------------------------------------------------
+calc_ind_energy_fl:
+    movq    rax, xmm1                      ; ambil bit pattern L
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx                       ; mask exponent+mantissa
+    jz      .error                         ; |L| == 0 -> error
+    mulsd   xmm0, xmm0                     ; Psi * Psi
+    divsd   xmm0, xmm1                     ; Psi^2 / L
+    mulsd   xmm0, [dq_half]                ; * 1/2  -> Psi^2 / (2L)
     ret
 .error:
     movsd   xmm0, [dq_nan]

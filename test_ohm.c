@@ -85,6 +85,14 @@ int main(void)
     check("Ec(6 C, 2 F) = 9 J",        calc_cap_energy_qc(6.0, 2.0), 9.0);
     check("Ec(5 C, 0 F) -> NaN",       calc_cap_energy_qc(5.0, 0.0), NAN);
 
+    puts("\n=== Uji Energi Induktor ===");
+    check("El(2 H, 3 A) = 9 J",        calc_ind_energy_li(2.0, 3.0), 9.0);
+    check("El(0.5 H, 4 A) = 4 J",      calc_ind_energy_li(0.5, 4.0), 4.0);
+    check("El(0 H, 5 A) = 0 J",        calc_ind_energy_li(0.0, 5.0), 0.0);
+    check("El(6 Wb, 2 A) = 6 J",       calc_ind_energy_fi(6.0, 2.0), 6.0);
+    check("El(4 Wb, 2 H) = 4 J",       calc_ind_energy_fl(4.0, 2.0), 4.0);
+    check("El(5 Wb, 0 H) -> NaN",      calc_ind_energy_fl(5.0, 0.0), NAN);
+
     printf("\n%s (%d kegagalan)\n", g_fail ? "GAGAL" : "SEMUA UJI LULUS", g_fail);
     return g_fail ? 1 : 0;
 }

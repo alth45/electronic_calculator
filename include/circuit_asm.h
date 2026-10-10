@@ -67,4 +67,13 @@ double calc_cap_energy_qv(double charge, double voltage);
 /* Ec = Q^2 / (2C)  (energi kapasitor, joule),  C == 0 -> NaN */
 double calc_cap_energy_qc(double charge, double capacitance);
 
+/* El = 1/2 * L * I^2  (energi induktor, joule) */
+double calc_ind_energy_li(double inductance, double current);
+
+/* El = 1/2 * Psi * I  (energi induktor, joule; Psi = fluks magnet) */
+double calc_ind_energy_fi(double flux, double current);
+
+/* El = Psi^2 / (2L)  (energi induktor, joule),  L == 0 -> NaN */
+double calc_ind_energy_fl(double flux, double inductance);
+
 #endif /* CIRCUIT_ASM_H */

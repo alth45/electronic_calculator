@@ -5,14 +5,14 @@
 ![Assembler NASM](https://img.shields.io/badge/Assembler-NASM-2C3E50?style=flat-square)
 ![GUI Win32 API](https://img.shields.io/badge/GUI-Win32%20API-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![Platform Windows](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
-![Uji unit 45 lulus](https://img.shields.io/badge/Uji-45%20lulus-brightgreen?style=flat-square)
+![Uji unit 51 lulus](https://img.shields.io/badge/Uji-51%20lulus-brightgreen?style=flat-square)
 ![Dokumentasi Bahasa Indonesia](https://img.shields.io/badge/Dokumentasi-Bahasa%20Indonesia-FF0000?style=flat-square)
 
 Aplikasi GUI Windows untuk menghitung besaran rangkaian elektronika —
-**tegangan, arus, hambatan, gabungan hambatan (seri/paralel), daya listrik, muatan listrik, dan kapasitansi kapasitor** —
+**tegangan, arus, hambatan, gabungan hambatan (seri/paralel), daya listrik, muatan listrik, kapasitansi kapasitor, serta energi dalam kapasitor dan induktor** —
 dengan pembagian tugas:
 
-- **GUI**: bahasa **C** memakai Win32 API murni (tanpa framework eksternal)
+- **GUI**: bahasa **C** memakai Win32 API murni (tanpa framework eksternal), antarmuka **tab control** — tiap kalkulator punya tab sendiri sehingga jendela tetap ringkas
 - **Core perhitungan**: bahasa **Assembly x86-64** (NASM) dengan SSE2 (`mulsd`, `divsd`, `ucomisd`)
 
 ## Fitur
@@ -43,6 +43,11 @@ dengan pembagian tugas:
    - $E_c = \dfrac{1}{2} C V^2$
    - $E_c = \dfrac{1}{2} Q V$
    - $E_c = \dfrac{Q^2}{2C}$ ($C = 0$ → error)
+   - Hasil dalam joule; field yang tidak dipakai rumus aktif otomatis dinonaktifkan
+7. **Energi Induktor** — pilih rumus (radio button):
+   - $E_l = \dfrac{1}{2} L I^2$
+   - $E_l = \dfrac{1}{2} \Psi I$ ($\Psi$ = fluks magnet)
+   - $E_l = \dfrac{\Psi^2}{2L}$ ($L = 0$ → error)
    - Hasil dalam joule; field yang tidak dipakai rumus aktif otomatis dinonaktifkan
 
 Validasi input ketat (angka valid, hambatan > 0) dengan pesan error bahasa Indonesia.
@@ -75,7 +80,11 @@ $$C = \frac{Q}{V} \qquad Q = C \times V \qquad V = \frac{Q}{C}$$
 
 $$E_c = \frac{1}{2} C V^2 = \frac{1}{2} Q V = \frac{Q^2}{2C}$$
 
-Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad), $E_c$ = energi kapasitor (joule).
+**7. Energi dalam induktor**
+
+$$E_l = \frac{1}{2} L I^2 = \frac{1}{2} \Psi I = \frac{\Psi^2}{2L}$$
+
+Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad), $L$ = induktansi (henry), $\Psi$ = fluks magnet (weber), $E_c$ / $E_l$ = energi (joule).
 
 ## Persyaratan
 
@@ -128,8 +137,8 @@ asm-c/
 │   ├── calc_ohm.c        # Kalkulator hukum Ohm & gabungan hambatan
 │   ├── calc_power.c      # Kalkulator daya listrik
 │   ├── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
-│   └── calc_energy.c     # Kalkulator energi dalam kapasitor
-├── test_ohm.c            # 45 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi)
+│   ├── calc_energy.c     # Kalkulator energi kapasitor & induktor
+├── test_ohm.c            # 51 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi C & L)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
 └── README.md
@@ -160,6 +169,7 @@ asm-c/
 │  - calc_capacitance / calc_charge_from_capacitance   │
 │  - calc_voltage_from_capacitance                     │
 │  - calc_cap_energy_cv / _qv / _qc                    │
+│  - calc_ind_energy_li / _fi / _fl                    │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -173,7 +183,7 @@ asm-c/
 
 ## Uji Program
 
-`test_ohm.c` berisi 45 pemeriksaan:
+`test_ohm.c` berisi 51 pemeriksaan:
 
 | Kelompok | Jumlah | Contoh kasus |
 |---|---|---|
@@ -184,11 +194,12 @@ asm-c/
 | Muatan listrik | 6 | `Q(2 A, 3 s) = 6 C`, `I(5 C, 0 s) → NaN` |
 | Kapasitansi kapasitor | 7 | `C(10 C, 2 V) = 5 F`, `V(7 C, 0 F) → NaN` |
 | Energi kapasitor | 6 | `Ec(2 F, 3 V) = 9 J`, `Ec(5 C, 0 F) → NaN` |
+| Energi induktor | 6 | `El(2 H, 3 A) = 9 J`, `El(5 Wb, 0 H) → NaN` |
 
 Jalankan `build.bat test` — keluaran akhir `SEMUA UJI LULUS (0 kegagalan)`.
 
 ## Catatan
 
 - "Tegangan" dan "voltase" adalah besaran yang sama (V).
-- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s), farad (F), joule (J).
+- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s), farad (F), henry (H), weber (Wb), joule (J).
 - Perhitungan memakai IEEE 754 double precision — hasil desimal diformat `%.6g`.

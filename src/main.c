@@ -29,6 +29,9 @@ int   g_cap_mode = CAP_C;
 HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
 int   g_e_mode = EC_CV;
 HWND  g_editECC, g_editECQ, g_editECV, g_lblEcResult;
+int   g_el_mode = EL_LI;
+HWND  g_editEL_L, g_editEL_I, g_editEL_PSI, g_lblElResult;
+HWND  g_tab;
 
 /* -------------------------------------------------------------- entry ---- */
 int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
@@ -36,10 +39,14 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 988, 548 };
+    RECT      rc = { 0, 0, 560, 272 };
     MSG       msg;
 
+    INITCOMMONCONTROLSEX icc = { sizeof icc, ICC_TAB_CLASSES };
+
     (void)prev; (void)cmd;
+
+    InitCommonControlsEx(&icc);        /* aktifkan kontrol tab */
 
     wc.style         = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc   = wnd_proc;

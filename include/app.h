@@ -15,6 +15,7 @@
 #endif
 
 #include <windows.h>
+#include <commctrl.h>
 
 /* ------------------------------------------------------------------ ID ---- */
 enum {
@@ -26,10 +27,15 @@ enum {
     ID_EDIT_R,
     ID_BTN_OHM,
     ID_LBL_OHM_RESULT,
+    ID_LBL_V_OHM,
+    ID_LBL_I_OHM,
+    ID_LBL_R_OHM,
     ID_EDIT_RES_LIST,
     ID_COMBO_TOPO,
     ID_BTN_NETWORK,
     ID_LBL_NET_RESULT,
+    ID_LBL_LIST,
+    ID_LBL_TOPO,
     ID_PWR_VI,
     ID_PWR_I2R,
     ID_PWR_V2R,
@@ -38,6 +44,9 @@ enum {
     ID_EDIT_PR,
     ID_BTN_POWER,
     ID_LBL_PWR_RESULT,
+    ID_LBL_PV,
+    ID_LBL_PI,
+    ID_LBL_PR,
     ID_CHG_Q,
     ID_CHG_I,
     ID_CHG_T,
@@ -46,6 +55,9 @@ enum {
     ID_EDIT_CHG_T,
     ID_BTN_CHARGE,
     ID_LBL_CHG_RESULT,
+    ID_LBL_CHG_Q,
+    ID_LBL_CHG_I,
+    ID_LBL_CHG_T,
     ID_CAP_C,
     ID_CAP_Q,
     ID_CAP_V,
@@ -54,6 +66,9 @@ enum {
     ID_EDIT_CAP_V,
     ID_BTN_CAP,
     ID_LBL_CAP_RESULT,
+    ID_LBL_CAP_C,
+    ID_LBL_CAP_Q,
+    ID_LBL_CAP_V,
     ID_EC_CV,
     ID_EC_QV,
     ID_EC_QC,
@@ -61,7 +76,30 @@ enum {
     ID_EDIT_EC_Q,
     ID_EDIT_EC_V,
     ID_BTN_EC,
-    ID_LBL_EC_RESULT
+    ID_LBL_EC_RESULT,
+    ID_LBL_EC_C,
+    ID_LBL_EC_Q,
+    ID_LBL_EC_V,
+    ID_EL_LI,
+    ID_EL_FI,
+    ID_EL_FL,
+    ID_EDIT_EL_L,
+    ID_EDIT_EL_I,
+    ID_EDIT_EL_PSI,
+    ID_BTN_EL,
+    ID_LBL_EL_RESULT,
+    ID_LBL_EL_L,
+    ID_LBL_EL_I,
+    ID_LBL_EL_PSI,
+    ID_GB_OHM,
+    ID_GB_NET,
+    ID_GB_PWR,
+    ID_GB_CHG,
+    ID_GB_CAP,
+    ID_GB_EC,
+    ID_GB_EL,
+    ID_TAB,
+    ID_LBL_INFO
 };
 
 /* --------------------------------------------------------- mode/konstanta - */
@@ -90,6 +128,12 @@ enum {
 #define EC_QV 1                  /*                   Ec = ½ Q V  */
 #define EC_QC 2                  /*                   Ec = Q² / 2C */
 
+#define EL_LI 0                  /* energi induktor: El = ½ L I² */
+#define EL_FI 1                  /*                 El = ½ Ψ I  */
+#define EL_FL 2                  /*                 El = Ψ² / 2L */
+
+#define TAB_COUNT 7              /* jumlah tab kalkulator */
+
 /* ------------------------------------------------ state global (main.c) --- */
 extern int   g_mode;
 extern HWND  g_editV, g_editI, g_editR, g_lblOhmResult;
@@ -102,6 +146,9 @@ extern int   g_cap_mode;
 extern HWND  g_editCapC, g_editCapQ, g_editCapV, g_lblCapResult;
 extern int   g_e_mode;
 extern HWND  g_editECC, g_editECQ, g_editECV, g_lblEcResult;
+extern int   g_el_mode;
+extern HWND  g_editEL_L, g_editEL_I, g_editEL_PSI, g_lblElResult;
+extern HWND  g_tab;
 
 /* ------------------------------------------------------------- gui.c ----- */
 BOOL     read_double(HWND edit, double *out);
@@ -121,5 +168,6 @@ void do_cap_calc(HWND hwnd);
 
 /* ---------------------------------------------------- calc_energy.c ---- */
 void do_energy_calc(HWND hwnd);
+void do_ind_energy_calc(HWND hwnd);
 
 #endif /* APP_H */
