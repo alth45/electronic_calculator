@@ -59,8 +59,10 @@ int parse_resistor_list(const wchar_t *text, double *out, int max_count)
     wcsncpy(buf, text, 511);
     buf[511] = L'\0';
 
-    for (tok = wcstok(buf, L",;", &ctx); tok != NULL;
-         tok = wcstok(NULL, L",;", &ctx)) {
+    /* wcstok_s (C11 Annex K / MSVC & MinGW-w64 UCRT) agar tidak
+     * terbentur prototipe wcstok 2-argen lama pada mingw-w64 headers. */
+    for (tok = wcstok_s(buf, L",;", &ctx); tok != NULL;
+         tok = wcstok_s(NULL, L",;", &ctx)) {
         wchar_t *end;
         double   v;
 

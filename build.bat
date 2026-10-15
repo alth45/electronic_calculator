@@ -50,6 +50,15 @@ if /i "%~1"=="test" (
         exit /b 1
     )
     test_ohm.exe
+    if errorlevel 1 exit /b %ERRORLEVEL%
+    echo.
+    echo --- Menjalankan uji tata letak tab ---
+    gcc -O2 -Wall -Iinclude tests\layout_test.c -o layout_test.exe
+    if errorlevel 1 (
+        echo [ERROR] Build uji tata letak gagal.
+        exit /b 1
+    )
+    layout_test.exe
     exit /b %ERRORLEVEL%
 )
 

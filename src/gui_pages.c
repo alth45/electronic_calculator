@@ -296,10 +296,10 @@ void create_ac_page(HWND hwnd, int gx, int gy)
               ox + PG_LBL_X + 275, oy + PG_RAD_Y, 100, 18, ID_AC_ZRL);
     make_ctrl(hwnd, L"BUTTON", L"Z seri RC",
               BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
-              ox + PG_LBL_X, oy + PG_RAD_Y + 24, 100, 18, ID_AC_ZRC);
+              ox + PG_LBL_X, oy + PG_RAD_Y + 22, 100, 18, ID_AC_ZRC);
     make_ctrl(hwnd, L"BUTTON", L"Z seri RLC",
               BS_AUTORADIOBUTTON | WS_TABSTOP,
-              ox + PG_LBL_X + 110, oy + PG_RAD_Y + 24, 110, 18, ID_AC_ZRLC);
+              ox + PG_LBL_X + 110, oy + PG_RAD_Y + 22, 110, 18, ID_AC_ZRLC);
 
     make_ctrl(hwnd, L"STATIC", L"Frekuensi f (Hz) :", SS_LEFT,
               ox + PG_LBL_X, oy + PG_ROW1_Y, PG_LBL_W, 20, ID_LBL_AC_F);

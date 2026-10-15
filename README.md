@@ -142,6 +142,9 @@ asm-c/
 │   ├── calc_power.c      # Kalkulator daya listrik
 │   ├── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
 │   └── calc_energy.c     # Kalkulator energi kapasitor & induktor
+├── tests/
+│   └── layout_test.c     # Uji regresi tata letak: tinggi semua tab harus
+│                         # muat di area tampilan tab (tidak menimpa bawah)
 ├── test_ohm.c            # 51 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi C & L)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
