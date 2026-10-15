@@ -93,6 +93,31 @@ int main(void)
     check("El(4 Wb, 2 H) = 4 J",       calc_ind_energy_fl(4.0, 2.0), 4.0);
     check("El(5 Wb, 0 H) -> NaN",      calc_ind_energy_fl(5.0, 0.0), NAN);
 
+    puts("\n=== Uji Reaktansi AC ===");
+    check("XL(50 Hz, 0.1 H)",          calc_xl(50.0, 0.1), 2.0*M_PI*50.0*0.1);
+    check("XL(60 Hz, 0.5 H)",          calc_xl(60.0, 0.5), 2.0*M_PI*60.0*0.5);
+    check("XL(0 Hz, 2 H) = 0",         calc_xl(0.0, 2.0), 0.0);
+    check("XC(50 Hz, 10 uF)",          calc_xc(50.0, 1e-5),
+          1.0 / (2.0*M_PI*50.0*1e-5));
+    check("XC(100 Hz, 100 nF)",        calc_xc(100.0, 1e-7),
+          1.0 / (2.0*M_PI*100.0*1e-7));
+    check("XC(f=0) -> NaN",            calc_xc(0.0, 1e-5), NAN);
+    check("XC(C=0) -> NaN",            calc_xc(50.0, 0.0), NAN);
+
+    puts("\n=== Uji Impedansi Seri ===");
+    check("Z(R=30, X=40) = 50",        calc_z_series(30.0, 40.0), 50.0);
+    check("Z(R=0, X=7) = 7",           calc_z_series(0.0, 7.0), 7.0);
+    check("Z(R=6, X=-8) = 10",         calc_z_series(6.0, -8.0), 10.0);
+    check("Z(R=100, X=0) = 100",       calc_z_series(100.0, 0.0), 100.0);
+    /* RLC seri: Z = sqrt(R^2 + (XL - XC)^2) */
+    {
+        double xl  = calc_xl(50.0, 0.1);
+        double xc  = calc_xc(50.0, 1e-5);
+        double z   = calc_z_series(30.0, xl - xc);
+        double zwant = sqrt(30.0*30.0 + (xl - xc)*(xl - xc));
+        check("Z RLC(30, XL-XC)",      z, zwant);
+    }
+
     printf("\n%s (%d kegagalan)\n", g_fail ? "GAGAL" : "SEMUA UJI LULUS", g_fail);
     return g_fail ? 1 : 0;
 }

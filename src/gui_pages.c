@@ -274,6 +274,57 @@ void create_indenergy_page(HWND hwnd, int gx, int gy)
               ox + PG_RES_X, oy + PG_RES_Y, PG_RES_W, PG_RES_H, ID_LBL_EL_RESULT);
 }
 
+/* ------------------------------------------------------------- ac ---------- */
+void create_ac_page(HWND hwnd, int gx, int gy)
+{
+    int ox = gx + 2, oy = gy + 2;
+
+    make_ctrl(hwnd, L"BUTTON",
+              L"8. Reaktansi & Impedansi AC  "
+              L"(XL = 2\u03C0fL,  XC = 1/2\u03C0fC,  Z = \u221A(R\u00B2+X\u00B2))",
+              BS_GROUPBOX, ox, oy, PG_GRP_W, PG_GRP_H, ID_GB_AC);
+
+    /* Baris 1: tiga radio; baris 2: dua radio (grup tombol radio tunggal) */
+    make_ctrl(hwnd, L"BUTTON", L"XL = 2\u03C0fL",
+              BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
+              ox + PG_LBL_X, oy + PG_RAD_Y, 120, 18, ID_AC_XL);
+    make_ctrl(hwnd, L"BUTTON", L"XC = 1 / 2\u03C0fC",
+              BS_AUTORADIOBUTTON | WS_TABSTOP,
+              ox + PG_LBL_X + 130, oy + PG_RAD_Y, 135, 18, ID_AC_XC);
+    make_ctrl(hwnd, L"BUTTON", L"Z seri RL",
+              BS_AUTORADIOBUTTON | WS_TABSTOP,
+              ox + PG_LBL_X + 275, oy + PG_RAD_Y, 100, 18, ID_AC_ZRL);
+    make_ctrl(hwnd, L"BUTTON", L"Z seri RC",
+              BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
+              ox + PG_LBL_X, oy + PG_RAD_Y + 24, 100, 18, ID_AC_ZRC);
+    make_ctrl(hwnd, L"BUTTON", L"Z seri RLC",
+              BS_AUTORADIOBUTTON | WS_TABSTOP,
+              ox + PG_LBL_X + 110, oy + PG_RAD_Y + 24, 110, 18, ID_AC_ZRLC);
+
+    make_ctrl(hwnd, L"STATIC", L"Frekuensi f (Hz) :", SS_LEFT,
+              ox + PG_LBL_X, oy + PG_ROW1_Y, PG_LBL_W, 20, ID_LBL_AC_F);
+    g_editAC_F = make_ctrl(hwnd, L"EDIT", L"", ES_AUTOHSCROLL,
+              ox + PG_EDT_X, oy + PG_ROW1_Y - 3, PG_EDT_W, PG_EDT_H, ID_EDIT_AC_F);
+    make_ctrl(hwnd, L"STATIC", L"Induktansi L (H) :", SS_LEFT,
+              ox + PG_LBL_X, oy + PG_ROW1_Y + PG_ROW_DY, PG_LBL_W, 20, ID_LBL_AC_L);
+    g_editAC_L = make_ctrl(hwnd, L"EDIT", L"", ES_AUTOHSCROLL,
+              ox + PG_EDT_X, oy + PG_ROW1_Y + PG_ROW_DY - 3, PG_EDT_W, PG_EDT_H, ID_EDIT_AC_L);
+    make_ctrl(hwnd, L"STATIC", L"Kapasitansi C (F) :", SS_LEFT,
+              ox + PG_LBL_X, oy + PG_ROW1_Y + 2 * PG_ROW_DY, PG_LBL_W, 20, ID_LBL_AC_C);
+    g_editAC_C = make_ctrl(hwnd, L"EDIT", L"", ES_AUTOHSCROLL,
+              ox + PG_EDT_X, oy + PG_ROW1_Y + 2 * PG_ROW_DY - 3, PG_EDT_W, PG_EDT_H, ID_EDIT_AC_C);
+    make_ctrl(hwnd, L"STATIC", L"Hambatan R (\u03A9) :", SS_LEFT,
+              ox + PG_LBL_X, oy + PG_ROW1_Y + 3 * PG_ROW_DY, PG_LBL_W, 20, ID_LBL_AC_R);
+    g_editAC_R = make_ctrl(hwnd, L"EDIT", L"", ES_AUTOHSCROLL,
+              ox + PG_EDT_X, oy + PG_ROW1_Y + 3 * PG_ROW_DY - 3, PG_EDT_W, PG_EDT_H, ID_EDIT_AC_R);
+
+    make_ctrl(hwnd, L"BUTTON", L"Hitung", 0,
+              ox + PG_BTN_X, oy + PG_BTN_Y, PG_BTN_W, PG_BTN_H, ID_BTN_AC);
+    g_lblAcResult = make_ctrl(hwnd, L"STATIC", L"Hasil akan\nmuncul di sini",
+              SS_LEFT | SS_SUNKEN,
+              ox + PG_RES_X, oy + PG_RES_Y, PG_RES_W, PG_RES_H, ID_LBL_AC_RESULT);
+}
+
 /* ---------------------------------------------------------------- info - */
 void create_info_label(HWND hwnd, int x, int y, int w)
 {
