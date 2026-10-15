@@ -98,6 +98,22 @@ enum {
     ID_GB_CAP,
     ID_GB_EC,
     ID_GB_EL,
+    ID_AC_XL,
+    ID_AC_XC,
+    ID_AC_ZRL,
+    ID_AC_ZRC,
+    ID_AC_ZRLC,
+    ID_EDIT_AC_F,
+    ID_EDIT_AC_L,
+    ID_EDIT_AC_C,
+    ID_EDIT_AC_R,
+    ID_BTN_AC,
+    ID_LBL_AC_RESULT,
+    ID_LBL_AC_F,
+    ID_LBL_AC_L,
+    ID_LBL_AC_C,
+    ID_LBL_AC_R,
+    ID_GB_AC,
     ID_TAB,
     ID_LBL_INFO
 };
@@ -132,7 +148,13 @@ enum {
 #define EL_FI 1                  /*                 El = ½ Ψ I  */
 #define EL_FL 2                  /*                 El = Ψ² / 2L */
 
-#define TAB_COUNT 7              /* jumlah tab kalkulator */
+#define AC_XL   0                /* reaktansi induktif: XL = 2πfL          */
+#define AC_XC   1                /* reaktansi kapasitif: XC = 1 / (2πfC)   */
+#define AC_ZRL  2                /* impedansi seri RL:  Z = √(R² + XL²)    */
+#define AC_ZRC  3                /* impedansi seri RC:  Z = √(R² + XC²)    */
+#define AC_ZRLC 4                /* impedansi seri RLC: Z = √(R² + (XL-XC)²) */
+
+#define TAB_COUNT 8              /* jumlah tab kalkulator */
 
 /* ------------------------------------------------ state global (main.c) --- */
 extern int   g_mode;
@@ -148,6 +170,8 @@ extern int   g_e_mode;
 extern HWND  g_editECC, g_editECQ, g_editECV, g_lblEcResult;
 extern int   g_el_mode;
 extern HWND  g_editEL_L, g_editEL_I, g_editEL_PSI, g_lblElResult;
+extern int   g_ac_mode;
+extern HWND  g_editAC_F, g_editAC_L, g_editAC_C, g_editAC_R, g_lblAcResult;
 extern HWND  g_tab;
 
 /* ------------------------------------------------------------- gui.c ----- */
@@ -169,5 +193,8 @@ void do_cap_calc(HWND hwnd);
 /* ---------------------------------------------------- calc_energy.c ---- */
 void do_energy_calc(HWND hwnd);
 void do_ind_energy_calc(HWND hwnd);
+
+/* -------------------------------------------------------- calc_ac.c ------ */
+void do_ac_calc(HWND hwnd);
 
 #endif /* APP_H */

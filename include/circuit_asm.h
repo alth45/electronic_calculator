@@ -76,4 +76,13 @@ double calc_ind_energy_fi(double flux, double current);
 /* El = Psi^2 / (2L)  (energi induktor, joule),  L == 0 -> NaN */
 double calc_ind_energy_fl(double flux, double inductance);
 
+/* XL = 2*pi*f*L  (reaktansi induktif, ohm) */
+double calc_xl(double frequency, double inductance);
+
+/* XC = 1 / (2*pi*f*C)  (reaktansi kapasitif, ohm),  f*C == 0 -> NaN */
+double calc_xc(double frequency, double capacitance);
+
+/* Z = sqrt(R^2 + X^2)  (impedansi seri RL/RC, ohm) */
+double calc_z_series(double resistance, double reactance);
+
 #endif /* CIRCUIT_ASM_H */

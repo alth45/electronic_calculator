@@ -50,6 +50,7 @@ void create_charge_page(HWND hwnd, int gx, int gy);
 void create_cap_page(HWND hwnd, int gx, int gy);
 void create_capenergy_page(HWND hwnd, int gx, int gy);
 void create_indenergy_page(HWND hwnd, int gx, int gy);
+void create_ac_page(HWND hwnd, int gx, int gy);
 
 /* Label keterangan simbol di bawah tab control. */
 void create_info_label(HWND hwnd, int x, int y, int w);

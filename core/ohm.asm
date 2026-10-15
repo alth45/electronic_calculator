@@ -18,7 +18,9 @@ default rel
 section .rodata
     dq_zero:    dq 0.0
     dq_one:     dq 1.0
+    dq_two:     dq 2.0
     dq_half:    dq 0.5                      ; konstanta 1/2 untuk energi
+    dq_pi:      dq 3.141592653589793        ; pi (untuk 2*pi*f di reaktansi AC)
     dq_nan:     dq 0x7FF8000000000000      ; quiet NaN = kode error
 
 section .text
@@ -43,6 +45,9 @@ global calc_cap_energy_qc
 global calc_ind_energy_li
 global calc_ind_energy_fi
 global calc_ind_energy_fl
+global calc_xl
+global calc_xc
+global calc_z_series
 
 
 ; -----------------------------------------------------------------------------
@@ -357,6 +362,64 @@ calc_ind_energy_fl:
     mulsd   xmm0, xmm0                     ; Psi * Psi
     divsd   xmm0, xmm1                     ; Psi^2 / L
     mulsd   xmm0, [dq_half]                ; * 1/2  -> Psi^2 / (2L)
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; =============================================================================
+; Rangkaian AC: reaktansi & impedansi seri RL/RC
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; double calc_xl(double frequency /*XMM0*/, double inductance /*XMM1*/)
+; XL = 2 * pi * f * L  (reaktansi induktif, ohm)
+; -----------------------------------------------------------------------------
+calc_xl:
+    movsd   xmm2, [dq_two]
+    mulsd   xmm2, [dq_pi]                  ; xmm2 = 2*pi
+    mulsd   xmm0, xmm1                     ; f * L
+    mulsd   xmm0, xmm2                     ; 2*pi*f*L
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_xc(double frequency /*XMM0*/, double capacitance /*XMM1*/)
+; XC = 1 / (2 * pi * f * C),  error (NaN) jika f*C == 0
+; -----------------------------------------------------------------------------
+calc_xc:
+    movsd   xmm2, [dq_two]
+    mulsd   xmm2, [dq_pi]                  ; xmm2 = 2*pi
+    mulsd   xmm0, xmm1                     ; f * C
+    mulsd   xmm0, xmm2                     ; 2*pi*f*C
+    ; Cek hasil kali == 0 -> pembagian nol
+    ucomisd xmm0, xmm0                     ; NaN check (input NaN -> error)
+    jpe     .error
+    movq    rax, xmm0
+    mov     rcx, 0x7FFFFFFFFFFFFFFF
+    and     rax, rcx
+    jz      .error                         ; |2*pi*f*C| == 0 -> error
+    movsd   xmm1, [dq_one]
+    divsd   xmm1, xmm0                     ; 1 / (2*pi*f*C)
+    movapd  xmm0, xmm1
+    ret
+.error:
+    movsd   xmm0, [dq_nan]
+    ret
+
+; -----------------------------------------------------------------------------
+; double calc_z_series(double resistance /*XMM0*/, double reactance /*XMM1*/)
+; Z = sqrt(R^2 + X^2)  (impedansi seri RL/RC, ohm)
+; Gunakan SQRTSD (SSE); argumen bisa negatif untuk X (mis. XL - XC).
+; Input NaN tetap menghasilkan NaN (dipetakan ke error oleh pemanggil C).
+; -----------------------------------------------------------------------------
+calc_z_series:
+    movsd   xmm2, [dq_zero]                ; pembanding 0.0
+    mulsd   xmm0, xmm0                     ; R^2
+    mulsd   xmm1, xmm1                     ; X^2
+    addsd   xmm0, xmm1                     ; R^2 + X^2
+    ucomisd xmm0, xmm2                     ; negatif / NaN -> tidak terdefinisi
+    jb      .error                         ; (CF=1 saat unordered juga)
+    sqrtsd  xmm0, xmm0                     ; sqrt(R^2 + X^2)
     ret
 .error:
     movsd   xmm0, [dq_nan]

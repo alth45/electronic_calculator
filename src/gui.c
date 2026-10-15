@@ -64,6 +64,18 @@ static void sync_ind_mode(void)
     EnableWindow(g_editEL_PSI, g_el_mode != EL_LI);
 }
 
+/* Sinkronkan edit reaktansi/impedansi AC sesuai rumus aktif. */
+static void sync_ac_mode(void)
+{
+    EnableWindow(g_editAC_F, TRUE);                                   /* selalu dipakai */
+    EnableWindow(g_editAC_L, g_ac_mode == AC_XL || g_ac_mode == AC_ZRL ||
+                             g_ac_mode == AC_ZRLC);
+    EnableWindow(g_editAC_C, g_ac_mode == AC_XC || g_ac_mode == AC_ZRC ||
+                             g_ac_mode == AC_ZRLC);
+    EnableWindow(g_editAC_R, g_ac_mode == AC_ZRL || g_ac_mode == AC_ZRC ||
+                             g_ac_mode == AC_ZRLC);
+}
+
 /* --------------------------------------------------------- tab control --- */
 
 /* Petakan ID kontrol ke indeks tab (0..TAB_COUNT-1); -1 = selalu terlihat. */
@@ -76,6 +88,7 @@ static int tab_of_id(int id)
     if (id >= ID_CAP_C         && id <= ID_LBL_CAP_V)  return 4;
     if (id >= ID_EC_CV         && id <= ID_LBL_EC_V)   return 5;
     if (id >= ID_EL_LI         && id <= ID_LBL_EL_PSI) return 6;
+    if (id >= ID_AC_XL         && id <= ID_LBL_AC_R)   return 7;
     switch (id) {                                     /* group box tiap tab */
     case ID_GB_OHM: return 0;
     case ID_GB_NET: return 1;
@@ -84,6 +97,7 @@ static int tab_of_id(int id)
     case ID_GB_CAP: return 4;
     case ID_GB_EC:  return 5;
     case ID_GB_EL:  return 6;
+    case ID_GB_AC:  return 7;
     }
     return -1;                                        /* tab & keterangan */
 }
@@ -106,13 +120,13 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case WM_CREATE: {
         static const wchar_t *TAB_NAMES[TAB_COUNT] = {
             L"Hukum Ohm", L"Hambatan", L"Daya", L"Muatan",
-            L"Kapasitor", L"Energi C", L"Energi L"
+            L"Kapasitor", L"Energi C", L"Energi L", L"Impedansi AC"
         };
         TCITEMW ti;
         RECT    rc;
         int     i, gx, gy;
 
-        /* Tab control lega: 7 tab muat tanpa scroll (±99 px/tab) */
+        /* Tab control lega: 8 tab muat tanpa scroll (±87 px/tab) */
         g_tab = make_ctrl(hwnd, WC_TABCONTROL, L"", WS_TABSTOP,
                           12, 12, 696, 250, ID_TAB);
         for (i = 0; i < TAB_COUNT; i++) {
@@ -136,6 +150,7 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         create_cap_page(hwnd, gx, gy);
         create_capenergy_page(hwnd, gx, gy);
         create_indenergy_page(hwnd, gx, gy);
+        create_ac_page(hwnd, gx, gy);
         create_info_label(hwnd, 16, 268, 688);
 
         /* Nilai awal contoh + mode default */
@@ -176,6 +191,14 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         CheckRadioButton(hwnd, ID_EL_LI, ID_EL_FL, ID_EL_LI);
         g_el_mode = EL_LI;
         sync_ind_mode();
+
+        SetWindowTextW(g_editAC_F, L"50");
+        SetWindowTextW(g_editAC_L, L"0.1");
+        SetWindowTextW(g_editAC_C, L"0.00001");   /* 10 uF */
+        SetWindowTextW(g_editAC_R, L"30");
+        CheckRadioButton(hwnd, ID_AC_XL, ID_AC_ZRLC, ID_AC_XL);
+        g_ac_mode = AC_XL;
+        sync_ac_mode();
 
         /* Tampilkan tab pertama; tab lain tersembunyi */
         show_tab(hwnd, 0);
@@ -250,6 +273,15 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         }
         if (id == ID_BTN_EL) {
             do_ind_energy_calc(hwnd);
+            return 0;
+        }
+        if (id >= ID_AC_XL && id <= ID_AC_ZRLC) {
+            g_ac_mode = id - ID_AC_XL;
+            sync_ac_mode();
+            return 0;
+        }
+        if (id == ID_BTN_AC) {
+            do_ac_calc(hwnd);
             return 0;
         }
         break;
