@@ -18,7 +18,7 @@
 #define PG_GRP_W        688
 #define PG_GRP_H        200
 #define PG_NET_H        140
-#define PG_RAD_Y        28
+#define PG_RAD_Y        50
 #define PG_ROW1_Y       58
 #define PG_ROW_DY       32
 #define PG_LBL_X        20
@@ -26,7 +26,7 @@
 #define PG_EDT_X        176
 #define PG_EDT_W        220
 #define PG_EDT_H        26
-#define PG_BTN_X        430
+#define PG_BTN_X        465
 #define PG_BTN_Y        58
 #define PG_BTN_W        140
 #define PG_BTN_H        36
@@ -84,6 +84,12 @@ int main(void)
 
     radio2_bottom = GRP_OFF + PG_RAD_Y + 22 + 18;
     check_le("tab AC - radio baris ke-2", radio2_bottom, PG_PAGE_BOTTOM);
+
+    /* 3b. Halaman Kode SMD: 2 baris radio + 2 baris input. */
+    check_le("tab Kode SMD - edit baris ke-2 (toleransi)",
+             GRP_OFF + PG_ROW1_Y + PG_ROW_DY - 3 + PG_EDT_H, PG_PAGE_BOTTOM);
+    check_le("tab Kode SMD - label aturan (radio baris ke-2)",
+             GRP_OFF + PG_RAD_Y + 22 + 18, PG_PAGE_BOTTOM);
 
     /* Tombol Hitung tetap di dalam grup. */
     check_le("tombol Hitung", GRP_OFF + PG_BTN_Y + PG_BTN_H, PG_PAGE_BOTTOM);

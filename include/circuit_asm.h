@@ -85,4 +85,21 @@ double calc_xc(double frequency, double capacitance);
 /* Z = sqrt(R^2 + X^2)  (impedansi seri RL/RC, ohm) */
 double calc_z_series(double resistance, double reactance);
 
+/* ---- Penerjemah kode komponen SMD / keramik (core/code.asm) ------------
+ * Konvensi error berbeda dari fungsi double di atas: fungsi integer ini
+ * mengembalikan -1 untuk input tidak valid.                                      */
+
+/* Kode kapasitor "digits x 10^exp" -> nilai dalam pF.
+   digits < 0 atau exp di luar 0..9 -> -1.  Contoh: (10, 4) -> 100000 pF. */
+long long decode_cap_code(int digits, int exp);
+
+/* Kode induktor "digits x 10^exp" -> nilai dalam nH. Aturan sama,
+   contoh: (10, 1) -> 100 nH. */
+long long decode_ind_code(int digits, int exp);
+
+/* Huruf toleransi EIA -> persen x100 (integer).
+   'J' -> 500 (= 5 %), 'K' -> 1000 (= 10 %), 'B'/'E' -> 50 (= 0,5 %),
+   huruf kecil diterima; huruf tak dikenal -> -1. */
+long long tolerance_letter_percent(int letter);
+
 #endif /* CIRCUIT_ASM_H */

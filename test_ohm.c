@@ -9,6 +9,15 @@
 
 static int g_fail = 0;
 
+static void checki(const char *name, long long got, long long want)
+{
+    int ok = (got == want);
+    printf("%-32s got=%-14lld want=%-14lld %s\n", name, got, want,
+           ok ? "OK" : "FAIL");
+    if (!ok)
+        g_fail++;
+}
+
 static void check(const char *name, double got, double want)
 {
     int ok = (isnan(want) && isnan(got)) ||
@@ -117,6 +126,34 @@ int main(void)
         double zwant = sqrt(30.0*30.0 + (xl - xc)*(xl - xc));
         check("Z RLC(30, XL-XC)",      z, zwant);
     }
+
+    puts("\n=== Uji Kode Kapasitor (SMD/keramik) ===");
+    checki("decode_cap(10, 4) = 100.000 pF", decode_cap_code(10, 4), 100000LL);
+    checki("decode_cap(22, 0) = 22 pF",      decode_cap_code(22, 0), 22LL);
+    checki("decode_cap(47, 5) = 4.700.000",  decode_cap_code(47, 5), 4700000LL);
+    checki("decode_cap(100, 6)",             decode_cap_code(100, 6), 100000000LL);
+    checki("decode_cap(exp > 9) -> -1",      decode_cap_code(10, 10), -1LL);
+    checki("decode_cap(digits < 0) -> -1",   decode_cap_code(-1, 4), -1LL);
+
+    puts("\n=== Uji Kode Induktor ===");
+    checki("decode_ind(10, 1) = 100 nH",     decode_ind_code(10, 1), 100LL);
+    checki("decode_ind(47, 0) = 47 nH",      decode_ind_code(47, 0), 47LL);
+    checki("decode_ind(22, 1) = 220 nH",     decode_ind_code(22, 1), 220LL);
+    checki("decode_ind(exp < 0) -> -1",      decode_ind_code(10, -1), -1LL);
+
+    puts("\n=== Uji Huruf Toleransi (persen x100) ===");
+    checki("toleransi 'J' = 500 (5%)",       tolerance_letter_percent('J'), 500LL);
+    checki("toleransi 'K' = 1000 (10%)",     tolerance_letter_percent('K'), 1000LL);
+    checki("toleransi 'M' = 1500 (15%)",     tolerance_letter_percent('M'), 1500LL);
+    checki("toleransi 'N' = 2000 (20%)",     tolerance_letter_percent('N'), 2000LL);
+    checki("toleransi 'B' = 50 (0,5%)",      tolerance_letter_percent('B'), 50LL);
+    checki("toleransi 'C' = 10 (0,1%)",      tolerance_letter_percent('C'), 10LL);
+    checki("toleransi 'D' = 25 (0,25%)",     tolerance_letter_percent('D'), 25LL);
+    checki("toleransi 'P' = 10000 (100%)",   tolerance_letter_percent('P'), 10000LL);
+    checki("huruf kecil 'j' sama dgn 'J'",   tolerance_letter_percent('j'), 500LL);
+    checki("'H' tak dipetakan -> -1",         tolerance_letter_percent('H'), -1LL);
+    checki("'X' di luar tabel -> -1",         tolerance_letter_percent('X'), -1LL);
+    checki("'A' sebelum B -> -1",             tolerance_letter_percent('A'), -1LL);
 
     printf("\n%s (%d kegagalan)\n", g_fail ? "GAGAL" : "SEMUA UJI LULUS", g_fail);
     return g_fail ? 1 : 0;

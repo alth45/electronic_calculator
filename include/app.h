@@ -114,6 +114,15 @@ enum {
     ID_LBL_AC_C,
     ID_LBL_AC_R,
     ID_GB_AC,
+    ID_CODE_CAP,
+    ID_CODE_IND,
+    ID_LBL_CODE_KOD,
+    ID_LBL_CODE_TOL,
+    ID_EDIT_CODE_KOD,
+    ID_EDIT_CODE_TOL,
+    ID_BTN_CODE,
+    ID_LBL_CODE_RESULT,
+    ID_GB_CODE,
     ID_TAB,
     ID_LBL_INFO
 };
@@ -154,7 +163,10 @@ enum {
 #define AC_ZRC  3                /* impedansi seri RC:  Z = √(R² + XC²)    */
 #define AC_ZRLC 4                /* impedansi seri RLC: Z = √(R² + (XL-XC)²) */
 
-#define TAB_COUNT 8              /* jumlah tab kalkulator */
+#define CODE_CAP 0               /* terjemahkan kode kapasitor (hasil pF)   */
+#define CODE_IND 1               /* terjemahkan kode induktor (hasil nH)    */
+
+#define TAB_COUNT 9              /* jumlah tab kalkulator */
 
 /* ------------------------------------------------ state global (main.c) --- */
 extern int   g_mode;
@@ -172,6 +184,8 @@ extern int   g_el_mode;
 extern HWND  g_editEL_L, g_editEL_I, g_editEL_PSI, g_lblElResult;
 extern int   g_ac_mode;
 extern HWND  g_editAC_F, g_editAC_L, g_editAC_C, g_editAC_R, g_lblAcResult;
+extern int   g_code_mode;
+extern HWND  g_editCodeKod, g_editCodeTol, g_lblCodeResult;
 extern HWND  g_tab;
 
 /* ------------------------------------------------------------- gui.c ----- */
@@ -196,5 +210,8 @@ void do_ind_energy_calc(HWND hwnd);
 
 /* -------------------------------------------------------- calc_ac.c ------ */
 void do_ac_calc(HWND hwnd);
+
+/* ------------------------------------------------------- calc_code.c ----- */
+void do_code_calc(HWND hwnd);
 
 #endif /* APP_H */

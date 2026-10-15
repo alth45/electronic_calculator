@@ -325,6 +325,51 @@ void create_ac_page(HWND hwnd, int gx, int gy)
               ox + PG_RES_X, oy + PG_RES_Y, PG_RES_W, PG_RES_H, ID_LBL_AC_RESULT);
 }
 
+/* ------------------------------------------------------------- code ------- */
+void create_code_page(HWND hwnd, int gx, int gy)
+{
+    int ox = gx + 2, oy = gy + 2;
+
+    make_ctrl(hwnd, L"BUTTON",
+              L"9. Kode Kapasitor & Induktor (SMD / Keramik)  "
+              L"(\"104\" \u2192 10 x 10\u2074 pF = 100 nF)",
+              BS_GROUPBOX, ox, oy, PG_GRP_W, PG_GRP_H, ID_GB_CODE);
+
+    /* Baris 1: dua radio jenis komponen; baris 2: penjelasan aturan */
+    make_ctrl(hwnd, L"BUTTON", L"Kode Kapasitor (pF)",
+              BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP,
+              ox + PG_LBL_X, oy + PG_RAD_Y, 160, 18, ID_CODE_CAP);
+    make_ctrl(hwnd, L"BUTTON", L"Kode Induktor (nH)",
+              BS_AUTORADIOBUTTON | WS_TABSTOP,
+              ox + PG_LBL_X + 170, oy + PG_RAD_Y, 150, 18, ID_CODE_IND);
+
+    make_ctrl(hwnd, L"STATIC",
+              L"Aturan: digit pertama = angka, digit terakhir = jumlah nol.",
+              SS_LEFT,
+              ox + PG_LBL_X, oy + PG_RAD_Y + 22, 500, 18, ID_LBL_CODE_KOD);
+
+    make_ctrl(hwnd, L"STATIC", L"Kode pada badan (cth. 104) :", SS_LEFT,
+              ox + PG_LBL_X, oy + PG_ROW1_Y, PG_LBL_W, 20, ID_LBL_CODE_TOL);
+    g_editCodeKod = make_ctrl(hwnd, L"EDIT", L"", ES_AUTOHSCROLL,
+              ox + PG_EDT_X, oy + PG_ROW1_Y - 3, PG_EDT_W, PG_EDT_H,
+              ID_EDIT_CODE_KOD);
+
+    make_ctrl(hwnd, L"STATIC",
+              L"Toleransi 1 huruf (opsional,\ncth. J = 5%, K = 10%) :",
+              SS_LEFT,
+              ox + PG_LBL_X, oy + PG_ROW1_Y + PG_ROW_DY, PG_LBL_W, 36, -1);
+    g_editCodeTol = make_ctrl(hwnd, L"EDIT", L"", ES_AUTOHSCROLL,
+              ox + PG_EDT_X, oy + PG_ROW1_Y + PG_ROW_DY - 3,
+              PG_EDT_W, PG_EDT_H, ID_EDIT_CODE_TOL);
+
+    make_ctrl(hwnd, L"BUTTON", L"Terjemahkan", 0,
+              ox + PG_BTN_X, oy + PG_BTN_Y, PG_BTN_W, PG_BTN_H, ID_BTN_CODE);
+    g_lblCodeResult = make_ctrl(hwnd, L"STATIC", L"Hasil akan\nmuncul di sini",
+              SS_LEFT | SS_SUNKEN,
+              ox + PG_RES_X, oy + PG_RES_Y, PG_RES_W, PG_RES_H,
+              ID_LBL_CODE_RESULT);
+}
+
 /* ---------------------------------------------------------------- info - */
 void create_info_label(HWND hwnd, int x, int y, int w)
 {
@@ -334,6 +379,7 @@ void create_info_label(HWND hwnd, int x, int y, int w)
               L"\u2022  Q = muatan (C)  \u2022  t = waktu (s)\n"
               L"C = kapasitansi (F)  \u2022  L = induktansi (H)  "
               L"\u2022  \u03A8 = fluks magnet (Wb)  \u2022  E = energi (J)  "
-              L"\u2022  Core: Assembly x86-64 (NASM)  \u2022  GUI: C (Win32)",
+              L"\u2022  kode \"104\" = 100 nF  \u2022  Core: Assembly x86-64 "
+              L"(NASM)  \u2022  GUI: C (Win32)",
               SS_LEFT, x, y, w, 36, ID_LBL_INFO);
 }
