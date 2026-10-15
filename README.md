@@ -5,14 +5,14 @@
 ![Assembler NASM](https://img.shields.io/badge/Assembler-NASM-2C3E50?style=flat-square)
 ![GUI Win32 API](https://img.shields.io/badge/GUI-Win32%20API-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![Platform Windows](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
-![Uji unit 51 lulus](https://img.shields.io/badge/Uji-51%20lulus-brightgreen?style=flat-square)
+![Uji unit 64 lulus](https://img.shields.io/badge/Uji-64%20lulus-brightgreen?style=flat-square)
 ![Dokumentasi Bahasa Indonesia](https://img.shields.io/badge/Dokumentasi-Bahasa%20Indonesia-FF0000?style=flat-square)
 
 Aplikasi GUI Windows untuk menghitung besaran rangkaian elektronika —
-**tegangan, arus, hambatan, gabungan hambatan (seri/paralel), daya listrik, muatan listrik, kapasitansi kapasitor, serta energi dalam kapasitor dan induktor** —
+**tegangan, arus, hambatan, gabungan hambatan (seri/paralel), daya listrik, muatan listrik, kapasitansi kapasitor, energi dalam kapasitor dan induktor, serta reaktansi & impedansi rangkaian AC** —
 dengan pembagian tugas:
 
-- **GUI**: bahasa **C** memakai Win32 API murni (tanpa framework eksternal), antarmuka **tab control** — tiap kalkulator punya tab sendiri sehingga jendela tetap ringkas
+- **GUI**: bahasa **C** memakai Win32 API murni (tanpa framework eksternal), antarmuka **tab control** — tiap kalkulator punya tab sendiri (8 tab) sehingga jendela tetap ringkas; tinggi tiap halaman tab diseragamkan agar konten tidak terpotong/menimpa bagian bawah jendela
 - **Core perhitungan**: bahasa **Assembly x86-64** (NASM) dengan SSE2 (`mulsd`, `divsd`, `ucomisd`)
 
 ## Fitur
@@ -49,8 +49,17 @@ dengan pembagian tugas:
    - $E_l = \dfrac{1}{2} \Psi I$ ($\Psi$ = fluks magnet)
    - $E_l = \dfrac{\Psi^2}{2L}$ ($L = 0$ → error)
    - Hasil dalam joule; field yang tidak dipakai rumus aktif otomatis dinonaktifkan
+8. **Reaktansi & Impedansi AC** — pilih rumus (radio button):
+   - Reaktansi induktif → $X_L = 2 \pi f L$ (ohm)
+   - Reaktansi kapasitif → $X_C = \dfrac{1}{2 \pi f C}$ ($f = 0$ atau $C = 0$ → error)
+   - Impedansi seri RL → $Z = \sqrt{R^2 + X_L^2}$
+   - Impedansi seri RC → $Z = \sqrt{R^2 + X_C^2}$
+   - Impedansi seri RLC → $Z = \sqrt{R^2 + (X_L - X_C)^2}$
+   - Field yang tidak dipakai rumus aktif otomatis dinonaktifkan; hasil dalam ohm (Ω)
 
-Validasi input ketat (angka valid, hambatan > 0) dengan pesan error bahasa Indonesia.
+Validasi input ketat (angka valid, hambatan/frekuensi/kapasitansi > 0) dengan pesan error bahasa Indonesia.
+
+Tata letak tab: semua halaman memakai grid seragam (`PG_*` di `include/gui.h`) dengan tinggi group box sama (200 px), kontrol tab setinggi 264 px, dan label keterangan selalu berada di bawah area tampilan tab — tidak ada kontrol yang saling menimpa (dijaga oleh uji regresi tata letak, lihat `tests/layout_test.c`).
 
 ## Kumpulan Rumus
 
@@ -84,7 +93,13 @@ $$E_c = \frac{1}{2} C V^2 = \frac{1}{2} Q V = \frac{Q^2}{2C}$$
 
 $$E_l = \frac{1}{2} L I^2 = \frac{1}{2} \Psi I = \frac{\Psi^2}{2L}$$
 
-Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad), $L$ = induktansi (henry), $\Psi$ = fluks magnet (weber), $E_c$ / $E_l$ = energi (joule).
+**8. Reaktansi & impedansi rangkaian AC seri**
+
+$$X_L = 2 \pi f L \qquad X_C = \frac{1}{2 \pi f C}$$
+
+$$Z_{RL} = \sqrt{R^2 + X_L^2} \qquad Z_{RC} = \sqrt{R^2 + X_C^2} \qquad Z_{RLC} = \sqrt{R^2 + (X_L - X_C)^2}$$
+
+Keterangan simbol: $V$ = tegangan/voltase (volt), $I$ = arus (ampere), $R$ = hambatan (ohm), $P$ = daya (watt), $Q$ = muatan (coulomb), $t$ = waktu (sekon), $C$ = kapasitansi (farad), $L$ = induktansi (henry), $\Psi$ = fluks magnet (weber), $E_c$ / $E_l$ = energi (joule), $f$ = frekuensi (hertz), $X_L$ / $X_C$ = reaktansi induktif/kapasitif (ohm), $Z$ = impedansi (ohm).
 
 ## Persyaratan
 
@@ -101,13 +116,14 @@ Keduanya harus ada di `PATH`. Windows 64-bit (target ABI: Windows x64).
 :: Build GUI saja
 build.bat
 
-:: Build + jalankan 51 uji unit logika assembly
+:: Build + jalankan 64 uji unit logika assembly + uji tata letak tab
 build.bat test
 ```
 
 Hasil build:
 - `kalkulator_rangkaian.exe` — jalankan langsung dari File Explorer
 - `test_ohm.exe` — uji unit CLI (exit code 0 = semua lulus)
+- `layout_test.exe` — uji regresi tata letak tab (exit code 0 = tidak ada kontrol yang menimpa bagian bawah)
 
 Build manual (setara isi `build.bat`):
 
@@ -116,11 +132,12 @@ nasm -f win64 core\ohm.asm -o ohm.obj
 gcc -O2 -Wall -municode -mwindows -Iinclude ^
     src\main.c src\gui.c src\gui_widgets.c src\gui_pages.c ^
     src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
-    src\calc_energy.c ^
+    src\calc_energy.c src\calc_ac.c ^
     ohm.obj -o kalkulator_rangkaian.exe -lgdi32 -lcomctl32
 
 :: Uji unit (opsional)
 gcc -O2 -Wall -Iinclude test_ohm.c ohm.obj -o test_ohm.exe
+gcc -O2 -Wall -Iinclude tests\layout_test.c -o layout_test.exe
 ```
 
 ## Struktur File
@@ -141,11 +158,12 @@ asm-c/
 │   ├── calc_ohm.c        # Kalkulator hukum Ohm & gabungan hambatan
 │   ├── calc_power.c      # Kalkulator daya listrik
 │   ├── calc_charge.c     # Kalkulator muatan & kapasitansi kapasitor
-│   └── calc_energy.c     # Kalkulator energi kapasitor & induktor
+│   ├── calc_energy.c     # Kalkulator energi kapasitor & induktor
+│   └── calc_ac.c         # Kalkulator reaktansi & impedansi AC
 ├── tests/
 │   └── layout_test.c     # Uji regresi tata letak: tinggi semua tab harus
 │                         # muat di area tampilan tab (tidak menimpa bawah)
-├── test_ohm.c            # 51 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi C & L)
+├── test_ohm.c            # 64 uji unit (Ohm, seri/paralel, daya, muatan, kapasitor, energi C & L, reaktansi & impedansi AC)
 ├── build.bat             # Script build otomatis
 ├── .gitignore            # Abaikan artefak build (*.obj, *.exe, dll.)
 └── README.md
@@ -180,20 +198,24 @@ asm-c/
 │  - calc_voltage_from_capacitance                     │
 │  - calc_cap_energy_cv / _qv / _qc                    │
 │  - calc_ind_energy_li / _fi / _fl                    │
+│  - calc_xl / calc_xc          (reaktansi XL = 2πfL,  │
+│    XC = 1/(2πfC), pakai konstanta 2π)                │
+│  - calc_z_series              (Z = √(R² + X²),       │
+│    dipakai RL / RC / RLC dari C)                     │
 └──────────────────────────────────────────────────────┘
 ```
 
 ### Konvensi error di assembly
 
 - Semua fungsi memakai tipe `double`.
-- Input tidak valid (pembagian nol, `NULL`, count ≤ 0, hambatan ≤ 0 / NaN)
+- Input tidak valid (pembagian nol, `NULL`, count ≤ 0, hambatan/frekuensi/kapasitansi ≤ 0 / NaN)
   mengembalikan **quiet NaN** (`0x7FF8000000000000`).
 - Pemanggil C wajib memeriksa dengan `isnan()` dari `<math.h>` lalu menampilkan
   pesan error ke pengguna.
 
 ## Uji Program
 
-`test_ohm.c` berisi 51 pemeriksaan:
+`test_ohm.c` berisi 64 pemeriksaan:
 
 | Kelompok | Jumlah | Contoh kasus |
 |---|---|---|
@@ -205,11 +227,16 @@ asm-c/
 | Kapasitansi kapasitor | 7 | `C(10 C, 2 V) = 5 F`, `V(7 C, 0 F) → NaN` |
 | Energi kapasitor | 6 | `Ec(2 F, 3 V) = 9 J`, `Ec(5 C, 0 F) → NaN` |
 | Energi induktor | 6 | `El(2 H, 3 A) = 9 J`, `El(5 Wb, 0 H) → NaN` |
+| Reaktansi AC | 7 | `XL(50 Hz, 0.1 H) ≈ 31.4159 Ω`, `XC(f=0) → NaN` |
+| Impedansi seri | 6 | `Z(R=30, X=40) = 50 Ω`, RLC: `Z = √(R²+(XL−XC)²)` |
 
 Jalankan `build.bat test` — keluaran akhir `SEMUA UJI LULUS (0 kegagalan)`.
+
+Selanjutnya `tests/layout_test.c` dijalankan otomatis sebagai **uji regresi tata letak tab**: memverifikasi tinggi group box, baris input/radio, tombol, label hasil, kontrol tab, dan label keterangan semuanya berada dalam batas — konten tab (termasuk tab "Impedansi AC" yang berpola 4 baris input) tidak boleh menjulur atau saling menimpa bagian bawah jendela. Keluaran akhir `semua pemeriksaan tata letak LULUS`.
 
 ## Catatan
 
 - "Tegangan" dan "voltase" adalah besaran yang sama (V).
-- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s), farad (F), henry (H), weber (Wb), joule (J).
+- Satuan ditampilkan: volt (V), ampere (A), ohm (Ω), watt (W), coulomb (C), sekon (s), farad (F), henry (H), weber (Wb), joule (J), hertz (Hz).
 - Perhitungan memakai IEEE 754 double precision — hasil desimal diformat `%.6g`.
+- Tinggi jendela (client 720×330 px) mengikuti tinggi kontrol tab (264 px) + label keterangan; bila menambah tab/field baru, sesuaikan konstanta `PG_*` di `include/gui.h` — `layout_test` akan gagal bila ada kontrol yang melewati batas.
