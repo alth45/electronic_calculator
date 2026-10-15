@@ -89,16 +89,17 @@ calc_resistance:
     ret
 
 ; -----------------------------------------------------------------------------
-; double calc_series_resistance(const double *values /*RCX*/, int count /*EDX*/)
+; double calc_series_resistance(const double *values /*RDI*/, int count /*ESI*/)
+; Convention: System V AMD64 (Linux/ELF) -> argumen pertama/ kedua di RDI/ESI.
 ; Rs = R1 + R2 + ... + Rn  (loop penjumlahan di assembly)
 ; -----------------------------------------------------------------------------
 calc_series_resistance:
-    test    rcx, rcx
+    test    rdi, rdi
     jz      .error                         ; pointer NULL
-    cmp     edx, 0
+    cmp     esi, 0
     jle     .error                         ; count <= 0
 
-    movsxd  r8, edx                        ; r8 = count (64-bit)
+    movsxd  r8, esi                        ; r8 = count (64-bit)
     xor     r9, r9                         ; r9 = i = 0
     xorpd   xmm0, xmm0                     ; total = 0.0
 
@@ -106,7 +107,7 @@ calc_series_resistance:
     cmp     r9, r8
     jge     .done
 
-    movsd   xmm1, [rcx + r9*8]             ; xmm1 = values[i]
+    movsd   xmm1, [rdi + r9*8]             ; xmm1 = values[i]
 
     ucomisd xmm1, xmm1                     ; cek NaN: PF=1 jika unordered
     jpe     .error
@@ -124,16 +125,17 @@ calc_series_resistance:
     ret
 
 ; -----------------------------------------------------------------------------
-; double calc_parallel_resistance(const double *values /*RCX*/, int count /*EDX*/)
+; double calc_parallel_resistance(const double *values /*RDI*/, int count /*ESI*/)
+; Convention: System V AMD64 (Linux/ELF) -> argumen pertama/ kedua di RDI/ESI.
 ; Rp = 1 / (1/R1 + 1/R2 + ... + 1/Rn)
 ; -----------------------------------------------------------------------------
 calc_parallel_resistance:
-    test    rcx, rcx
+    test    rdi, rdi
     jz      .error                         ; pointer NULL
-    cmp     edx, 0
+    cmp     esi, 0
     jle     .error                         ; count <= 0
 
-    movsxd  r8, edx                        ; r8 = count (64-bit)
+    movsxd  r8, esi                        ; r8 = count (64-bit)
     xor     r9, r9                         ; r9 = i = 0
     xorpd   xmm0, xmm0                     ; akumulator sum(1/Ri) = 0.0
 
@@ -141,7 +143,7 @@ calc_parallel_resistance:
     cmp     r9, r8
     jge     .finalize
 
-    movsd   xmm1, [rcx + r9*8]             ; xmm1 = values[i]
+    movsd   xmm1, [rdi + r9*8]             ; xmm1 = values[i]
 
     ucomisd xmm1, xmm1                     ; cek NaN: PF=1 jika unordered
     jpe     .error

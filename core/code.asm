@@ -27,15 +27,25 @@ tw10:   dq  1, 10, 100, 1000, 10000, 100000, 1000000, 10000000
 >>>>>>> f552dacaf93bff496b9c75609de2b44620d7566f
 
 ; Persen x100 untuk huruf toleransi EIA B..P (indeks = huruf - 'B').
-; 0xFFFF = sentinel "tidak dikenal" (I, O dilewati standar; H, L jarang).
-tol_x100: dw  50, 10, 25, 50, 100, 200          ; B C D E F G
-          dw  0xFFFF                            ; H -> tidak dipetakan
-          dw  500, 1000                         ; J K
-          dw  0xFFFF                            ; L -> tidak dipetakan
-          dw  1500, 2000                        ; M N
-          dw  0xFFFF                            ; O -> tidak dipetakan
-          dw  10000                             ; P -> 100 %
-          dw  0xFFFF                            ; Q (pengaman batas tabel)
+; Semua slot dari 'B' (indeks 0) s.d. 'P' (indeks 14) ditulis eksplisit dan
+; berurutan supaya tidak ada pergeseran indeks.
+; 0xFFFF = sentinel "tidak dikenal" (H, L, O tidak dipetakan oleh standar).
+tol_x100: dw  50        ; B -> 0,5 %
+          dw  10        ; C -> 0,1 %
+          dw  25        ; D -> 0,25 %
+          dw  50        ; E -> 0,5 %
+          dw  100       ; F -> 1 %
+          dw  200       ; G -> 2 %
+          dw  0xFFFF    ; H -> tidak dipetakan
+          dw  0xFFFF    ; I -> tidak dipetakan
+          dw  500       ; J -> 5 %
+          dw  1000      ; K -> 10 %
+          dw  0xFFFF    ; L -> tidak dipetakan
+          dw  1500      ; M -> 15 %
+          dw  2000      ; N -> 20 %
+          dw  0xFFFF    ; O -> tidak dipetakan
+          dw  10000     ; P -> 100 %
+          dw  0xFFFF    ; Q (pengaman batas tabel)
 
 section .text
 
@@ -80,11 +90,13 @@ decode_ind_code:
 ;   J=500(5%)  K=1000(10%) M=1500(15%) N=2000(20%) P=10000(100%)
 ; Huruf kecil diterima (di-upper lebih dulu). Huruf tak dikenal -> -1.
 ;
-; BUG LAMA: huruf di-"lower" dengan `or eax, 0x20` lalu dibandingkan
-; sentinel 0xFFFF. Karena 'P' (0x50) di-lower-kan menjadi 'p' (0x70),
-; indeksnya melampaui batas tabel dan setiap huruf justru jatuh ke jalur
-; error (-1). Perbaikan: huruf di-"upper" dengan `and eax, ~0x20` sehingga
-; rentang indeks tetap B..P (0..14) dan sentinel hanya mengenai H/L/O.
+; BUG LAMA: tabel tol_x100 didefinisikan dengan baris `dw 50, 10, 25, 50,
+; 100, 200` untuk B..G, tetapi sentinel H/L/O ditulis sebagai satu `dw` per
+; baris sehingga slot 'I' (yang harusnya ada di antara H dan J) hilang.
+; Akibatnya indeks J..P bergeser -1 dan huruf-huruf tersebut membaca nilai
+; yang salah / sentinel (-1). Perbaikan: setiap slot B..P ditulis eksplisit
+; dan berurutan (termasuk I -> 0xFFFF), ditambah normalisasi huruf kecil ke
+; lowercase via `or eax, 0x20` lalu `sub eax, 'b'` dengan batas indeks 0..14.
 ; -----------------------------------------------------------------------------
 tolerance_letter_percent:
     mov     eax, edi
