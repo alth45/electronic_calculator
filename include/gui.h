@@ -25,6 +25,7 @@ HWND make_ctrl(HWND parent, const wchar_t *cls, const wchar_t *txt, DWORD style,
  * saling menimpa label keterangan di bawah tab control. */
 #define PG_GRP_W 688
 #define PG_GRP_H 200
+#define PG_NET_H 140
 #define PG_NET_H 165
 
 /* Grid baris input: baris ke-4 (tab AC) berakhir di y = 58 + 3*32 + 26
