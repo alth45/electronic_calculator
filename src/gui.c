@@ -89,6 +89,7 @@ static int tab_of_id(int id)
     if (id >= ID_EC_CV         && id <= ID_LBL_EC_V)   return 5;
     if (id >= ID_EL_LI         && id <= ID_LBL_EL_PSI) return 6;
     if (id >= ID_AC_XL         && id <= ID_LBL_AC_R)   return 7;
+    if (id >= ID_CODE_CAP      && id <= ID_LBL_CODE_RESULT) return 8;
     switch (id) {                                     /* group box tiap tab */
     case ID_GB_OHM: return 0;
     case ID_GB_NET: return 1;
@@ -98,6 +99,7 @@ static int tab_of_id(int id)
     case ID_GB_EC:  return 5;
     case ID_GB_EL:  return 6;
     case ID_GB_AC:  return 7;
+    case ID_GB_CODE: return 8;
     }
     return -1;                                        /* tab & keterangan */
 }
@@ -120,13 +122,14 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case WM_CREATE: {
         static const wchar_t *TAB_NAMES[TAB_COUNT] = {
             L"Hukum Ohm", L"Hambatan", L"Daya", L"Muatan",
-            L"Kapasitor", L"Energi C", L"Energi L", L"Impedansi AC"
+            L"Kapasitor", L"Energi C", L"Energi L", L"Impedansi AC",
+            L"Kode SMD"
         };
         TCITEMW ti;
         RECT    rc;
         int     i, gx, gy;
 
-        /* Tab control lega: 8 tab muat tanpa scroll (±87 px/tab).
+        /* Tab control lega: 9 tab muat tanpa scroll (±87 px/tab).
          * Tinggi 264 px -> area tampilan tab ±219 px, cukup untuk
          * halaman tertinggi (grup 200 px) + padding, sehingga tidak ada
          * kontrol tab yang menimpa bagian bawah jendela / label info. */
@@ -154,6 +157,7 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         create_capenergy_page(hwnd, gx, gy);
         create_indenergy_page(hwnd, gx, gy);
         create_ac_page(hwnd, gx, gy);
+        create_code_page(hwnd, gx, gy);
         create_info_label(hwnd, 16, 282, 688);
 
         /* Nilai awal contoh + mode default */
@@ -202,6 +206,11 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         CheckRadioButton(hwnd, ID_AC_XL, ID_AC_ZRLC, ID_AC_XL);
         g_ac_mode = AC_XL;
         sync_ac_mode();
+
+        SetWindowTextW(g_editCodeKod, L"104");
+        SetWindowTextW(g_editCodeTol, L"J");
+        CheckRadioButton(hwnd, ID_CODE_CAP, ID_CODE_IND, ID_CODE_CAP);
+        g_code_mode = CODE_CAP;
 
         /* Tampilkan tab pertama; tab lain tersembunyi */
         show_tab(hwnd, 0);
@@ -285,6 +294,14 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         }
         if (id == ID_BTN_AC) {
             do_ac_calc(hwnd);
+            return 0;
+        }
+        if (id == ID_CODE_CAP || id == ID_CODE_IND) {
+            g_code_mode = id - ID_CODE_CAP;
+            return 0;
+        }
+        if (id == ID_BTN_CODE) {
+            do_code_calc(hwnd);
             return 0;
         }
         break;

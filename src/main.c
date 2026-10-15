@@ -16,6 +16,7 @@
  *   src/calc_charge.c    - kalkulator muatan & kapasitansi kapasitor
  *   src/calc_energy.c    - kalkulator energi kapasitor & induktor
  *   src/calc_ac.c        - kalkulator reaktansi & impedansi rangkaian AC
+ *   src/calc_code.c      - penerjemah kode kapasitor/induktor SMD & keramik
  *   core/ohm.asm         - logika perhitungan Assembly x86-64
  *
  * Build: jalankan build.bat (butuh NASM + GCC MinGW-w64).
@@ -38,6 +39,8 @@ int   g_el_mode = EL_LI;
 HWND  g_editEL_L, g_editEL_I, g_editEL_PSI, g_lblElResult;
 int   g_ac_mode = AC_XL;
 HWND  g_editAC_F, g_editAC_L, g_editAC_C, g_editAC_R, g_lblAcResult;
+int   g_code_mode = CODE_CAP;
+HWND  g_editCodeKod, g_editCodeTol, g_lblCodeResult;
 HWND  g_tab;
 
 /* -------------------------------------------------------------- entry ---- */

@@ -27,12 +27,18 @@ if errorlevel 1 (
     exit /b 1
 )
 
+nasm -f win64 core\code.asm -o code.obj
+if errorlevel 1 (
+    echo [ERROR] Assembly gagal.
+    exit /b 1
+)
+
 echo [2/2] Compiling + linking src\*.c ...
 gcc -O2 -Wall -municode -mwindows -Iinclude ^
     src\main.c src\gui.c src\gui_widgets.c src\gui_pages.c ^
     src\calc_ohm.c src\calc_power.c src\calc_charge.c ^
-    src\calc_energy.c src\calc_ac.c ^
-    ohm.obj -o kalkulator_rangkaian.exe -lgdi32 -lcomctl32
+    src\calc_energy.c src\calc_ac.c src\calc_code.c ^
+    ohm.obj code.obj -o kalkulator_rangkaian.exe -lgdi32 -lcomctl32
 if errorlevel 1 (
     echo [ERROR] Build GUI gagal.
     exit /b 1
@@ -44,7 +50,7 @@ echo Build sukses: kalkulator_rangkaian.exe
 if /i "%~1"=="test" (
     echo.
     echo --- Menjalankan uji logika assembly ---
-    gcc -O2 -Wall -Iinclude test_ohm.c ohm.obj -o test_ohm.exe
+    gcc -O2 -Wall -Iinclude test_ohm.c ohm.obj code.obj -o test_ohm.exe
     if errorlevel 1 (
         echo [ERROR] Build uji gagal.
         exit /b 1
