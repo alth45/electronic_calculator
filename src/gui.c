@@ -126,9 +126,12 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         RECT    rc;
         int     i, gx, gy;
 
-        /* Tab control lega: 8 tab muat tanpa scroll (±87 px/tab) */
+        /* Tab control lega: 8 tab muat tanpa scroll (±87 px/tab).
+         * Tinggi 264 px -> area tampilan tab ±219 px, cukup untuk
+         * halaman tertinggi (grup 200 px) + padding, sehingga tidak ada
+         * kontrol tab yang menimpa bagian bawah jendela / label info. */
         g_tab = make_ctrl(hwnd, WC_TABCONTROL, L"", WS_TABSTOP,
-                          12, 12, 696, 250, ID_TAB);
+                          12, 12, 696, 264, ID_TAB);
         for (i = 0; i < TAB_COUNT; i++) {
             ZeroMemory(&ti, sizeof ti);
             ti.mask    = TCIF_TEXT;
@@ -137,7 +140,7 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         }
 
         /* Area tampilan tab (client area di bawah baris tab header) */
-        rc.left = 12; rc.top = 12; rc.right = 708; rc.bottom = 262;
+        rc.left = 12; rc.top = 12; rc.right = 708; rc.bottom = 276;
         SendMessageW(g_tab, TCM_ADJUSTRECT, TRUE, (LPARAM)&rc);
         gx = rc.left;
         gy = rc.top;
@@ -151,7 +154,7 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         create_capenergy_page(hwnd, gx, gy);
         create_indenergy_page(hwnd, gx, gy);
         create_ac_page(hwnd, gx, gy);
-        create_info_label(hwnd, 16, 268, 688);
+        create_info_label(hwnd, 16, 282, 688);
 
         /* Nilai awal contoh + mode default */
         SetWindowTextW(g_editI, L"0.5");

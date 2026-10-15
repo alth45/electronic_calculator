@@ -46,7 +46,10 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show)
     const wchar_t *CLASS_NAME = L"CircuitCalcWnd";
     WNDCLASSW wc;
     HWND      hwnd;
-    RECT      rc = { 0, 0, 720, 310 };
+    /* Tinggi jendela disesuaikan dengan tab control (264 px) + label
+     * keterangan di bawahnya, agar konten tab tidak terpotong / menimpa
+     * bagian bawah jendela. */
+    RECT      rc = { 0, 0, 720, 330 };
     MSG       msg;
 
     INITCOMMONCONTROLSEX icc = { sizeof icc, ICC_TAB_CLASSES };
