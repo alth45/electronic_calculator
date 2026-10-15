@@ -14,8 +14,8 @@
 /* ------------------------------------------------- gui_widgets.c -------- */
 
 /* Widget helper: buat kontrol child + set font GUI default. */
-HWND make_ctrl(HWND parent, const wchar_t *cls, const wchar_t *txt,
-               DWORD style, int x, int y, int w, int h, int id);
+HWND make_ctrl(HWND parent, const wchar_t *cls, const wchar_t *txt, DWORD style,
+               int x, int y, int w, int h, int id);
 
 /* ------------------------------------------------- gui_pages.c ----------- */
 
@@ -23,33 +23,33 @@ HWND make_ctrl(HWND parent, const wchar_t *cls, const wchar_t *txt,
  * sama untuk SEMUA tab - termasuk Impedansi AC yang punya 4 baris input -
  * sehingga tidak ada kontrol yang menjulur/melebihi area tampilan tab dan
  * saling menimpa label keterangan di bawah tab control. */
-#define PG_GRP_W    688
-#define PG_GRP_H    200
-#define PG_NET_H    140
+#define PG_GRP_W 688
+#define PG_GRP_H 200
+#define PG_NET_H 165
 
 /* Grid baris input: baris ke-4 (tab AC) berakhir di y = 58 + 3*32 + 26
  * = 172 < PG_GRP_H -> semua baris input tetap di dalam grup. */
-#define PG_RAD_Y    28                       /* baris radio button          */
-#define PG_ROW_DY   32                       /* jarak antar baris input     */
-#define PG_ROW1_Y   58                       /* baris input pertama         */
-#define PG_LBL_X    20                       /* x label                     */
-#define PG_LBL_W    150                      /* lebar label                 */
-#define PG_EDT_X    176                      /* x edit box                  */
-#define PG_EDT_W    220                      /* lebar edit box              */
-#define PG_EDT_H    26                       /* tinggi edit box             */
-#define PG_BTN_X    430                      /* x tombol Hitung             */
-#define PG_BTN_Y    58
-#define PG_BTN_W    140
-#define PG_BTN_H    36
-#define PG_RES_X    430                      /* x label hasil               */
-#define PG_RES_Y    102
-#define PG_RES_W    230
-#define PG_RES_H    80
+#define PG_RAD_Y 50  /* baris radio button          */
+#define PG_ROW_DY 32 /* jarak antar baris input     */
+#define PG_ROW1_Y 74 /* baris input pertama         */
+#define PG_LBL_X 20  /* x label                     */
+#define PG_LBL_W 150 /* lebar label                 */
+#define PG_EDT_X 176 /* x edit box                  */
+#define PG_EDT_W 220 /* lebar edit box              */
+#define PG_EDT_H 26  /* tinggi edit box             */
+#define PG_BTN_X 465 /* x tombol Hitung             */
+#define PG_BTN_Y 58
+#define PG_BTN_W 140
+#define PG_BTN_H 36
+#define PG_RES_X 430 /* x label hasil               */
+#define PG_RES_Y 102
+#define PG_RES_W 230
+#define PG_RES_H 80
 
 /* Batas bawah (y maksimum) semua kontrol di dalam halaman tab.
  * Dipakai oleh layout_test.c untuk memverifikasi tidak ada kontrol
  * yang melebihi area tampilan tab dan menimpa bagian bawah jendela. */
-#define PG_PAGE_BOTTOM  (PG_GRP_H - 4)       /* 196 px dari origin halaman  */
+#define PG_PAGE_BOTTOM (PG_GRP_H - 4) /* 196 px dari origin halaman  */
 
 /* Pembuat halaman; (gx, gy) = origin area tampilan tab control. */
 void create_ohm_page(HWND hwnd, int gx, int gy);
